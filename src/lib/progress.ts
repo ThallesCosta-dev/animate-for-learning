@@ -1,0 +1,45 @@
+// Persistência de progresso no navegador (localStorage).
+// Todas as funções são seguras para SSR: não tocam em `window` fora de efeitos.
+const STORAGE_KEY = "parapente-lab-v1";
+
+export interface QuizEntry {
+  date: string;
+  score: number;
+  total: number;
+}
+
+export interface ProgressState {
+  completedLessons: string[];
+  quizHistory: QuizEntry[];
+  checklist: Record<string, boolean>;
+  reduceMotion: boolean;
+  lastLesson: string | null;
+}
+
+export const DEFAULT_PROGRESS: ProgressState = {
+  completedLessons: [],
+  quizHistory: [],
+  checklist: {},
+  reduceMotion: false,
+  lastLesson: null,
+};
+
+export function loadProgress(): ProgressState {
+  if (typeof window === "undefined") return DEFAULT_PROGRESS;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return DEFAULT_PROGRESS;
+    return { ...DEFAULT_PROGRESS, ...JSON.parse(raw) };
+  } catch {
+    return DEFAULT_PROGRESS;
+  }
+}
+
+export function saveProgress(state: ProgressState): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // armazenamento cheio ou bloqueado: ignora silenciosamente
+  }
+}
