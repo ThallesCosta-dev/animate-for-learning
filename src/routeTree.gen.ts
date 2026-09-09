@@ -10,33 +10,128 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AprenderRouteImport } from './routes/aprender'
+import { Route as GlossarioRouteImport } from './routes/glossario'
+import { Route as MeteorologiaRouteImport } from './routes/meteorologia'
+import { Route as ProgressoRouteImport } from './routes/progresso'
+import { Route as QuizRouteImport } from './routes/quiz'
+import { Route as SegurancaRouteImport } from './routes/seguranca'
+import { Route as SimuladorRouteImport } from './routes/simulador'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AprenderRoute = AprenderRouteImport.update({
+  id: '/aprender',
+  path: '/aprender',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GlossarioRoute = GlossarioRouteImport.update({
+  id: '/glossario',
+  path: '/glossario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeteorologiaRoute = MeteorologiaRouteImport.update({
+  id: '/meteorologia',
+  path: '/meteorologia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgressoRoute = ProgressoRouteImport.update({
+  id: '/progresso',
+  path: '/progresso',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuizRoute = QuizRouteImport.update({
+  id: '/quiz',
+  path: '/quiz',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SegurancaRoute = SegurancaRouteImport.update({
+  id: '/seguranca',
+  path: '/seguranca',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SimuladorRoute = SimuladorRouteImport.update({
+  id: '/simulador',
+  path: '/simulador',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aprender': typeof AprenderRoute
+  '/glossario': typeof GlossarioRoute
+  '/meteorologia': typeof MeteorologiaRoute
+  '/progresso': typeof ProgressoRoute
+  '/quiz': typeof QuizRoute
+  '/seguranca': typeof SegurancaRoute
+  '/simulador': typeof SimuladorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aprender': typeof AprenderRoute
+  '/glossario': typeof GlossarioRoute
+  '/meteorologia': typeof MeteorologiaRoute
+  '/progresso': typeof ProgressoRoute
+  '/quiz': typeof QuizRoute
+  '/seguranca': typeof SegurancaRoute
+  '/simulador': typeof SimuladorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/aprender': typeof AprenderRoute
+  '/glossario': typeof GlossarioRoute
+  '/meteorologia': typeof MeteorologiaRoute
+  '/progresso': typeof ProgressoRoute
+  '/quiz': typeof QuizRoute
+  '/seguranca': typeof SegurancaRoute
+  '/simulador': typeof SimuladorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/aprender'
+    | '/glossario'
+    | '/meteorologia'
+    | '/progresso'
+    | '/quiz'
+    | '/seguranca'
+    | '/simulador'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/aprender'
+    | '/glossario'
+    | '/meteorologia'
+    | '/progresso'
+    | '/quiz'
+    | '/seguranca'
+    | '/simulador'
+  id:
+    | '__root__'
+    | '/'
+    | '/aprender'
+    | '/glossario'
+    | '/meteorologia'
+    | '/progresso'
+    | '/quiz'
+    | '/seguranca'
+    | '/simulador'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AprenderRoute: typeof AprenderRoute
+  GlossarioRoute: typeof GlossarioRoute
+  MeteorologiaRoute: typeof MeteorologiaRoute
+  ProgressoRoute: typeof ProgressoRoute
+  QuizRoute: typeof QuizRoute
+  SegurancaRoute: typeof SegurancaRoute
+  SimuladorRoute: typeof SimuladorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +143,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/aprender': {
+      id: '/aprender'
+      path: '/aprender'
+      fullPath: '/aprender'
+      preLoaderRoute: typeof AprenderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/glossario': {
+      id: '/glossario'
+      path: '/glossario'
+      fullPath: '/glossario'
+      preLoaderRoute: typeof GlossarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meteorologia': {
+      id: '/meteorologia'
+      path: '/meteorologia'
+      fullPath: '/meteorologia'
+      preLoaderRoute: typeof MeteorologiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/progresso': {
+      id: '/progresso'
+      path: '/progresso'
+      fullPath: '/progresso'
+      preLoaderRoute: typeof ProgressoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quiz': {
+      id: '/quiz'
+      path: '/quiz'
+      fullPath: '/quiz'
+      preLoaderRoute: typeof QuizRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seguranca': {
+      id: '/seguranca'
+      path: '/seguranca'
+      fullPath: '/seguranca'
+      preLoaderRoute: typeof SegurancaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/simulador': {
+      id: '/simulador'
+      path: '/simulador'
+      fullPath: '/simulador'
+      preLoaderRoute: typeof SimuladorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AprenderRoute: AprenderRoute,
+  GlossarioRoute: GlossarioRoute,
+  MeteorologiaRoute: MeteorologiaRoute,
+  ProgressoRoute: ProgressoRoute,
+  QuizRoute: QuizRoute,
+  SegurancaRoute: SegurancaRoute,
+  SimuladorRoute: SimuladorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
