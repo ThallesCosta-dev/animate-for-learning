@@ -1,13 +1,12 @@
-# Roadmap
+# Roadmap — Parapente Lab
 
-- [x] Plano aprovado (Parapente Lab — app completo)
-- [ ] Foto real de parapente (asset CDN)
-- [ ] Base: tema, config, header/nav, página inicial, aviso legal, hook de progresso
-- [ ] Aerodinâmica: asa interativa, laboratório do perfil, ângulo de ataque, gráfico sustentação/arrasto, estol, carga alar, vento relativo, planeio
-- [ ] Meteorologia: aulas, térmica, ciclo da térmica, vento e relevo, brisa de vale, nuvens
-- [ ] Segurança: antes/durante/depois, checklist, cenários de decisão
-- [ ] Quiz + histórico
-- [ ] Simulador de voo (Phaser)
-- [ ] Glossário
-- [ ] Tela de progresso
+- [x] Base: tema, config, progresso, navegação
+- [x] Foto real de parapente (uso livre)
+- [x] Aerodinâmica: 8 aulas com simulações
+- [x] Meteorologia: 6 aulas com simulações
+- [x] Segurança: checklist + cenários
+- [x] Quiz com histórico
+- [x] Glossário pesquisável
+- [x] Simulador de voo (Phaser)
+- [x] Progresso por área + preferências
 - [ ] Verificação final no preview
