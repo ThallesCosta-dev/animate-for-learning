@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://animate-for-learning.lovable.app/</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://animate-for-learning.lovable.app/aprender</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://animate-for-learning.lovable.app/meteorologia</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://animate-for-learning.lovable.app/seguranca</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://animate-for-learning.lovable.app/simulador</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://animate-for-learning.lovable.app/quiz</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://animate-for-learning.lovable.app/glossario</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://animate-for-learning.lovable.app/progresso</loc>
+    <priority>0.6</priority>
+  </url>
+</urlset>
