@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Lesson } from "@/components/Lesson";
+import { LessonNav } from "@/components/LessonNav";
 import { WingParts } from "@/components/aero/WingParts";
 import { AirfoilLab } from "@/components/aero/AirfoilLab";
 import { LiftDragChart } from "@/components/aero/LiftDragChart";
@@ -8,26 +9,16 @@ import { WingLoading } from "@/components/aero/WingLoading";
 import { WindVectors } from "@/components/aero/WindVectors";
 import { GlideSim } from "@/components/aero/GlideSim";
 import { MODEL_DISCLAIMER } from "@/lib/config";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/aprender")({
-  head: () => ({
-    meta: [
-      { title: "Aerodinâmica do parapente — Parapente Lab" },
-      {
-        name: "description",
-        content:
-          "Aprenda como a asa do parapente gera sustentação: ângulo de ataque, estol, carga alar, vento relativo e planeio, com animações interativas.",
-      },
-      { property: "og:title", content: "Aerodinâmica do parapente — Parapente Lab" },
-      {
-        property: "og:description",
-        content:
-          "Animações interativas para entender sustentação, arrasto, estol, carga alar, vento relativo e planeio no parapente.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: () =>
+    seo({
+      titulo: "Aerodinâmica do parapente",
+      descricao:
+        "Aprenda como a asa do parapente gera sustentação: ângulo de ataque, estol, carga alar, vento relativo e planeio, com animações interativas.",
+      path: "/aprender",
+    }),
   component: AprenderPage,
 });
 
@@ -42,26 +33,58 @@ const NAV = [
   { id: "planeio", titulo: "8. Planeio" },
 ];
 
+// Explicação da aula 3 muda conforme o ângulo de ataque escolhido no laboratório.
+function explicacaoPorAngulo(aoa: number) {
+  if (aoa <= 2) {
+    return {
+      titulo: "Ângulo baixo: asa 'corre', mas segura pouco",
+      cor: "border-primary",
+      texto:
+        "Com pouco ângulo, o ar quase não é desviado: pouca sustentação e pouco arrasto. É o regime do acelerador — rápido, mas exige velocidade alta para sustentar o peso.",
+    };
+  }
+  if (aoa <= 8) {
+    return {
+      titulo: "Faixa de cruzeiro: o melhor equilíbrio",
+      cor: "border-forest",
+      texto:
+        "A sustentação já é suficiente e o arrasto continua baixo. É aqui que a asa planeia melhor — freios soltos ou levemente tensionados.",
+    };
+  }
+  if (aoa <= 12) {
+    return {
+      titulo: "Freios parcialmente puxados: mais sustentação, mais arrasto",
+      cor: "border-thermal",
+      texto:
+        "Cada grau a mais desvia mais ar para baixo: a sustentação cresce, mas o arrasto cresce mais depressa e a asa fica mais lenta. Típico de uma aproximação para pouso.",
+    };
+  }
+  if (aoa <= 15) {
+    return {
+      titulo: "Perto do limite: a asa fica lenta e 'mole'",
+      cor: "border-thermal",
+      texto:
+        "A sustentação ainda sobe um pouco, mas o arrasto dispara. Os comandos ficam pesados e a asa, instável. Repare nas partículas começando a se afastar do dorso.",
+    };
+  }
+  return {
+    titulo: "Passou do limite: estol",
+    cor: "border-destructive",
+    texto:
+      "O fluxo descolou do dorso e a sustentação despencou. Recuperação didática: soltar os freios para reduzir o ângulo e a asa voltar a voar. Próxima aula: o estol em detalhe.",
+  };
+}
+
 function AprenderPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="font-display text-3xl font-extrabold">Aerodinâmica do parapente</h1>
       <p className="mt-2 text-muted-foreground">
-        Oito aulas interativas para entender por que a asa voa. Mexa nos controles de cada
-        animação — aprender é experimentar.
+        Oito aulas interativas para entender por que a asa voa. Mexa nos controles de cada animação
+        — aprender é experimentar.
       </p>
 
-      <nav aria-label="Aulas de aerodinâmica" className="mt-6 flex flex-wrap gap-2">
-        {NAV.map((n) => (
-          <a
-            key={n.id}
-            href={`#${n.id}`}
-            className="rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium hover:bg-accent"
-          >
-            {n.titulo}
-          </a>
-        ))}
-      </nav>
+      <LessonNav label="Aulas de aerodinâmica" itens={NAV} />
 
       <div className="mt-8 space-y-10">
         <Lesson
@@ -113,20 +136,29 @@ function AprenderPage() {
           explicacao={
             <>
               <p>
-                O corte transversal da asa — o <strong>perfil</strong> — é desenhado para que o ar
-                que passa por cima percorra um caminho mais longo, criando uma região de menor
-                pressão no dorso. O resultado é uma força para cima: a <strong>sustentação</strong>.
+                O corte transversal da asa — o <strong>perfil</strong> — é curvo e trabalha
+                levemente inclinado em relação ao ar. Ao contornar o dorso curvo, o escoamento é
+                acelerado e a pressão ali cai; ao mesmo tempo, a asa{" "}
+                <strong>desvia o ar para baixo</strong> (repare no fluxo atrás do perfil). Pela
+                terceira lei de Newton, o ar empurra a asa para cima: é a{" "}
+                <strong>sustentação</strong>.
               </p>
               <p>
-                Ao mesmo tempo, o ar resiste ao avanço — isso é o <strong>arrasto</strong>. Toda
-                asa vive do equilíbrio entre essas duas forças.
+                Uma explicação popular diz que o ar "percorre um caminho mais longo por cima e
+                precisa chegar ao mesmo tempo". Ela está errada: o ar de cima chega ao bordo de fuga{" "}
+                <em>antes</em> do de baixo. O que importa é a curvatura do escoamento e a deflexão
+                do ar.
+              </p>
+              <p>
+                Ao mesmo tempo, o ar resiste ao avanço — isso é o <strong>arrasto</strong>. Toda asa
+                vive do equilíbrio entre essas duas forças.
               </p>
             </>
           }
           resumo={[
-            "O perfil da asa cria diferença de pressão entre dorso e intradorso",
+            "A asa curva e desvia o escoamento para baixo; a reação é a sustentação",
+            "Pressão menor no dorso, maior no intradorso — não por 'caminho mais longo'",
             "Sustentação aponta para cima; arrasto resiste ao avanço",
-            "O formato do perfil é o coração da aerodinâmica",
           ]}
           nota={MODEL_DISCLAIMER}
         >
@@ -142,23 +174,24 @@ function AprenderPage() {
             <>
               <p>
                 O <strong>ângulo de ataque</strong> é o ângulo entre a corda da asa e o vento
-                relativo. Ao aumentá-lo (por exemplo, puxando os freios), a sustentação cresce —
-                até um limite.
+                relativo. Ao aumentá-lo (por exemplo, puxando os freios), a sustentação cresce — até
+                um limite.
               </p>
               <p>
-                No laboratório acima, aumente o ângulo e observe: a sustentação sobe, mas o
-                arrasto também. E passando de certo ponto… vem o estol (próxima aula).
+                Mova só o controle de ângulo e acompanhe o quadro que muda com o valor: cada faixa
+                corresponde a um regime de voo diferente. Passando de certo ponto… vem o estol
+                (próxima aula).
               </p>
             </>
           }
-          resumo ={[
+          resumo={[
             "Ângulo de ataque = ângulo entre a asa e o vento relativo",
             "Mais ângulo → mais sustentação e mais arrasto (até o limite)",
             "Os freios são o principal controle do ângulo de ataque",
           ]}
           nota={MODEL_DISCLAIMER}
         >
-          <AirfoilLab />
+          <AirfoilLab aoaInicial={4} explicacaoPorAngulo={explicacaoPorAngulo} />
         </Lesson>
 
         <Lesson
@@ -170,12 +203,12 @@ function AprenderPage() {
             <>
               <p>
                 A sustentação cresce com o <strong>quadrado da velocidade</strong>: dobrar a
-                velocidade quadruplica a sustentação. O arrasto também cresce com a velocidade —
-                e é o preço pago por voar rápido.
+                velocidade quadruplica a sustentação. O arrasto também cresce com a velocidade — e é
+                o preço pago por voar rápido.
               </p>
               <p>
-                No gráfico, mova o marcador de velocidade e mude o ângulo de ataque para ver as
-                duas curvas se comportando juntas.
+                No gráfico, mova o marcador de velocidade e mude o ângulo de ataque para ver as duas
+                curvas se comportando juntas.
               </p>
             </>
           }
@@ -203,8 +236,7 @@ function AprenderPage() {
               </p>
               <p>
                 No parapente, o estol acontece ao puxar os freios além do limite, geralmente em
-                velocidade baixa. A recuperação didática: soltar os freios para a asa voltar a
-                voar.
+                velocidade baixa. A recuperação didática: soltar os freios para a asa voltar a voar.
               </p>
             </>
           }
@@ -239,8 +271,8 @@ function AprenderPage() {
             <>
               <p>
                 A <strong>carga alar</strong> é o peso total dividido pela área da asa (kg/m²).
-                Quanto maior a carga, maiores as velocidades de voo e mais rápidas as respostas —
-                e também maior a velocidade de estol.
+                Quanto maior a carga, maiores as velocidades de voo e mais rápidas as respostas — e
+                também maior a velocidade de estol.
               </p>
               <p>
                 Compare os dois pilotos na simulação e veja como o mais pesado voa mais rápido e
@@ -266,8 +298,8 @@ function AprenderPage() {
           explicacao={
             <>
               <p>
-                A asa só 'sente' o ar: a <strong>velocidade no ar</strong> é o que gera
-                sustentação. Mas o ar inteiro pode estar se movendo sobre o solo — esse é o vento.
+                A asa só 'sente' o ar: a <strong>velocidade no ar</strong> é o que gera sustentação.
+                Mas o ar inteiro pode estar se movendo sobre o solo — esse é o vento.
               </p>
               <p>
                 A <strong>velocidade no solo</strong> é a soma vetorial das duas. Contra o vento
@@ -294,13 +326,13 @@ function AprenderPage() {
           explicacao={
             <>
               <p>
-                A <strong>razão de planeio</strong> indica quantos metros a asa avança na
-                horizontal para cada metro que perde de altura. Uma razão 9 significa 9 metros à
-                frente por metro de descida.
+                A <strong>razão de planeio</strong> indica quantos metros a asa avança na horizontal
+                para cada metro que perde de altura. Uma razão 9 significa 9 metros à frente por
+                metro de descida.
               </p>
               <p>
-                O vento muda tudo: com vento de frente, o planeio sobre o solo encolhe; com vento
-                de cauda, estica. Teste na simulação.
+                O vento muda tudo: com vento de frente, o planeio sobre o solo encolhe; com vento de
+                cauda, estica. Teste na simulação.
               </p>
             </>
           }

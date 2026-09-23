@@ -18,7 +18,7 @@ export function ValleyBreeze() {
     return base - u * u * h * 0.55;
   };
 
-  const draw = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => {
+  const draw = (ctx: CanvasRenderingContext2D, w: number, h: number, _t: number, dt: number) => {
     // céu dia/noite
     const grad = ctx.createLinearGradient(0, 0, 0, h);
     if (dia) {
@@ -57,16 +57,16 @@ export function ValleyBreeze() {
       const centroDist = p.x / w - 0.5;
       if (dia) {
         // ar quente sobe pelas encostas: das bordas para o centro e para cima
-        p.x += centroDist > 0 ? -0.9 : 0.9;
-        p.y -= 0.7 + Math.random() * 0.4;
+        p.x += (centroDist > 0 ? -54 : 54) * dt;
+        p.y -= (42 + Math.random() * 24) * dt;
         if (p.y < solo - 130 || Math.abs(centroDist) < 0.03) {
           p.x = Math.random() < 0.5 ? Math.random() * w * 0.2 : w - Math.random() * w * 0.2;
           p.y = encosta(p.x, w, h) - 8;
         }
       } else {
         // ar frio desce as encostas para o fundo do vale
-        p.x += centroDist > 0 ? -0.7 : 0.7;
-        p.y += 0.55 + Math.random() * 0.3;
+        p.x += (centroDist > 0 ? -42 : 42) * dt;
+        p.y += (33 + Math.random() * 18) * dt;
         if (p.y > encosta(p.x, w, h) - 6 || Math.abs(centroDist) < 0.02) {
           p.x = Math.random() * w;
           p.y = Math.random() * h * 0.3;
@@ -120,7 +120,6 @@ export function ValleyBreeze() {
         draw={draw}
         height={320}
         label="Animação de um vale: de dia o ar quente sobe pelas encostas; à noite o ar frio desce para o fundo do vale"
-        deps={[dia]}
       />
       <div className="mt-4 flex gap-2">
         <button
@@ -141,8 +140,8 @@ export function ValleyBreeze() {
         </button>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">
-        De dia, as encostas aquecem e o ar sobe — anabático. À noite, esfriam e o ar frio
-        desce — catabático. Isso muda completamente o vento em rampas de decolagem.
+        De dia, as encostas aquecem e o ar sobe — anabático. À noite, esfriam e o ar frio desce —
+        catabático. Isso muda completamente o vento em rampas de decolagem.
       </p>
     </div>
   );

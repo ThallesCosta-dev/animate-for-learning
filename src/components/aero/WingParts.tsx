@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTabKeys } from "@/hooks/use-tab-keys";
 
 interface Parte {
   id: string;
@@ -23,7 +24,7 @@ const PARTES: Parte[] = [
     id: "tirantes",
     nome: "Tirantes",
     descricao:
-      "Fitas que reúnem grupos de linhas (A, B, C...) e conectam a asa ao selete. É neles que ficam os aceleradores e as conexões principais.",
+      "Fitas que reúnem grupos de linhas (A, B, C...) e conectam a asa à selete. É neles que ficam os aceleradores e as conexões principais.",
   },
   {
     id: "freios",
@@ -41,9 +42,12 @@ const PARTES: Parte[] = [
 
 // Asa de parapente simplificada em SVG: clique em cada componente para ver a função.
 export function WingParts() {
-  const [ativa, setAtiva] = useState<Parte>(PARTES[0]!);
+  const [indice, setIndice] = useState(0);
+  const ativa = PARTES[indice]!;
+  const onKeyDown = useTabKeys(PARTES.length, indice, setIndice);
 
   const cor = (id: string) => (ativa.id === id ? "var(--primary)" : "currentColor");
+  const selecionar = (id: string) => setIndice(PARTES.findIndex((p) => p.id === id));
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -51,7 +55,7 @@ export function WingParts() {
         viewBox="0 0 320 260"
         role="group"
         aria-label="Diagrama interativo de um parapente"
-        className="w-full rounded-xl border border-border bg-skyblue/20 text-slate-500"
+        className="w-full rounded-xl border border-border bg-skyblue/20 text-slate-500 dark:text-slate-300"
       >
         {/* Asa */}
         <path
@@ -60,7 +64,7 @@ export function WingParts() {
           stroke={cor("asa")}
           strokeWidth={ativa.id === "asa" ? 4 : 2}
           className="cursor-pointer transition-all"
-          onClick={() => setAtiva(PARTES[0]!)}
+          onClick={() => selecionar("asa")}
         >
           <title>Asa (velame)</title>
         </path>
@@ -69,7 +73,7 @@ export function WingParts() {
           stroke={cor("linhas")}
           strokeWidth={ativa.id === "linhas" ? 2.5 : 1}
           className="cursor-pointer"
-          onClick={() => setAtiva(PARTES[1]!)}
+          onClick={() => selecionar("linhas")}
         >
           {[60, 100, 140, 180, 220, 260].map((x) => (
             <line key={x} x1={x} y1={52} x2={160} y2={170} />
@@ -81,7 +85,7 @@ export function WingParts() {
           stroke={cor("tirantes")}
           strokeWidth={ativa.id === "tirantes" ? 5 : 3}
           className="cursor-pointer"
-          onClick={() => setAtiva(PARTES[2]!)}
+          onClick={() => selecionar("tirantes")}
         >
           <line x1={140} y1={150} x2={160} y2={185} />
           <line x1={180} y1={150} x2={160} y2={185} />
@@ -93,18 +97,14 @@ export function WingParts() {
           strokeWidth={ativa.id === "freios" ? 3.5 : 2}
           strokeDasharray="5 4"
           className="cursor-pointer"
-          onClick={() => setAtiva(PARTES[3]!)}
+          onClick={() => selecionar("freios")}
         >
           <path d="M45 66 Q100 120 150 190" fill="none" />
           <path d="M275 66 Q220 120 170 190" fill="none" />
           <title>Freios</title>
         </g>
         {/* Piloto */}
-        <g
-          className="cursor-pointer"
-          onClick={() => setAtiva(PARTES[4]!)}
-          fill={cor("piloto")}
-        >
+        <g className="cursor-pointer" onClick={() => selecionar("piloto")} fill={cor("piloto")}>
           <circle cx={160} cy={200} r={ativa.id === "piloto" ? 13 : 10} />
           <rect x={150} y={208} width={20} height={26} rx={8} />
           <title>Piloto / centro de gravidade</title>
@@ -113,15 +113,19 @@ export function WingParts() {
 
       <div>
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="Componentes do parapente">
-          {PARTES.map((p) => (
+          {PARTES.map((p, i) => (
             <button
               key={p.id}
+              id={`parte-tab-${p.id}`}
               type="button"
               role="tab"
-              aria-selected={ativa.id === p.id}
-              onClick={() => setAtiva(p)}
+              aria-selected={indice === i}
+              aria-controls={`parte-painel-${p.id}`}
+              tabIndex={indice === i ? 0 : -1}
+              onClick={() => setIndice(i)}
+              onKeyDown={onKeyDown}
               className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                ativa.id === p.id
+                indice === i
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-secondary-foreground hover:bg-accent"
               }`}
@@ -130,13 +134,18 @@ export function WingParts() {
             </button>
           ))}
         </div>
-        <div className="mt-3 rounded-xl border border-border bg-card p-4" role="tabpanel">
+        <div
+          id={`parte-painel-${ativa.id}`}
+          role="tabpanel"
+          aria-labelledby={`parte-tab-${ativa.id}`}
+          className="mt-3 rounded-xl border border-border bg-card p-4"
+        >
           <h3 className="font-display text-lg font-bold">{ativa.nome}</h3>
           <p className="mt-2 text-sm leading-relaxed text-foreground/90">{ativa.descricao}</p>
         </div>
         <p className="mt-3 text-sm text-muted-foreground">
-          Direção do voo, velocidade relativa do ar e velocidade em relação ao solo são
-          exploradas nas próximas aulas com vetores animados.
+          Direção do voo, velocidade relativa do ar e velocidade em relação ao solo são exploradas
+          nas próximas aulas com vetores animados.
         </p>
       </div>
     </div>

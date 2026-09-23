@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { SimCanvas } from "@/components/SimCanvas";
 import { Slider } from "@/components/Slider";
+import { suavizar } from "@/lib/anim";
+import { CORES } from "@/lib/colors";
 
 interface Particula {
   x: number;
@@ -20,7 +22,7 @@ export function MountainWind() {
     return base - (base - pico) * Math.exp(-u * u);
   };
 
-  const draw = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => {
+  const draw = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number, dt: number) => {
     // montanha
     ctx.fillStyle = "rgba(110,135,110,0.75)";
     ctx.beginPath();
@@ -36,28 +38,31 @@ export function MountainWind() {
       particulasRef.current = ps;
     }
 
-    const vx = (direcao === 0 ? 1 : -1) * (1 + forca / 12);
-    const barlavento = direcao === 0 ? "esquerda" : "direita";
+    const sentido = direcao === 0 ? 1 : -1;
+    const vxPxS = sentido * (1 + forca / 12) * 60;
     const sotaX = direcao === 0 ? 0.72 : 0.28; // centro do rotor (lado de sotavento)
+    const temRotor = forca > 12;
 
     for (const p of particulasRef.current) {
-      p.x += vx;
+      p.x += vxPxS * dt;
       const solo = montanhaY(p.x, w, h);
       const alvoMin = solo - 14;
 
       // lado de sotavento: rotor (circulação) + turbulência
       const distSota = Math.abs(p.x / w - sotaX);
-      if (distSota < 0.13 && p.y > solo - 110 && forca > 12) {
+      const noRotor = temRotor && distSota < 0.13 && p.y > solo - 110;
+      if (noRotor) {
         const a = t * (2 + forca / 10) + p.x * 0.05;
         const rcx = sotaX * w;
         const rcy = solo - 60;
         const r = 24 + (p.y % 40);
         p.x = rcx + Math.cos(a) * r;
         p.y = rcy + Math.sin(a) * r * 0.7;
-      } else {
+      } else if (p.y > alvoMin) {
         // fluxo segue o relevo: comprime e acelera na crista
-        if (p.y > alvoMin) p.y += (alvoMin - p.y) * 0.06;
-        else p.y += Math.sin(t + p.x * 0.02) * 0.3;
+        p.y = suavizar(p.y, alvoMin, 3.6, dt);
+      } else {
+        p.y += Math.sin(t + p.x * 0.02) * 18 * dt;
       }
 
       if (p.x > w + 8) {
@@ -69,20 +74,28 @@ export function MountainWind() {
         p.y = Math.random() * h * 0.75;
       }
 
-      const turbulento = distSota < 0.13 && p.y > montanhaY(p.x, w, h) - 110 && forca > 12;
-      ctx.fillStyle = turbulento ? "rgba(200,60,40,0.8)" : "rgba(30,100,200,0.55)";
+      ctx.fillStyle = noRotor ? CORES.fluxoTurbulento : CORES.fluxoFraco;
       ctx.beginPath();
       ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // rótulos
+    // rótulos: a seta aponta para onde o vento sopra
+    const setaVento = direcao === 0 ? "→" : "←";
     ctx.font = "bold 13px Sora, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillStyle = "#0a5a30";
-    ctx.fillText(`BARLAVENTO (${barlavento === "esquerda" ? "←" : "→"} vento sobe a encosta)`, direcao === 0 ? w * 0.22 : w * 0.78, 28);
-    ctx.fillStyle = "#a03028";
-    ctx.fillText("SOTAVENTO (rotor + turbulência)", direcao === 0 ? w * 0.76 : w * 0.24, 28);
+    ctx.fillStyle = CORES.barlavento;
+    ctx.fillText(
+      `BARLAVENTO (vento ${setaVento} sobe a encosta)`,
+      direcao === 0 ? w * 0.22 : w * 0.78,
+      28,
+    );
+    ctx.fillStyle = CORES.perigo;
+    ctx.fillText(
+      temRotor ? "SOTAVENTO (rotor + turbulência)" : "SOTAVENTO (descendente)",
+      direcao === 0 ? w * 0.76 : w * 0.24,
+      28,
+    );
   };
 
   return (
@@ -91,10 +104,16 @@ export function MountainWind() {
         draw={draw}
         height={320}
         label="Partículas de vento cruzando uma montanha: sobem na encosta de barlavento e formam rotor turbulento no lado de sotavento"
-        deps={[direcao, forca]}
       />
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <Slider label="Intensidade do vento" value={forca} min={5} max={45} unit="km/h" onChange={setForca} />
+        <Slider
+          label="Intensidade do vento"
+          value={forca}
+          min={5}
+          max={45}
+          unit="km/h"
+          onChange={setForca}
+        />
         <div>
           <p className="mb-1 text-sm font-medium">Direção do vento</p>
           <div className="flex gap-2">
@@ -104,7 +123,7 @@ export function MountainWind() {
               onClick={() => setDirecao(0)}
               className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium ${direcao === 0 ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
             >
-              → Da esquerda
+              Da esquerda →
             </button>
             <button
               type="button"
@@ -112,14 +131,14 @@ export function MountainWind() {
               onClick={() => setDirecao(1)}
               className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium ${direcao === 1 ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
             >
-              Da direita ←
+              ← Da direita
             </button>
           </div>
         </div>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">
-        Aumente o vento e observe: o rotor de sotavento só aparece com vento mais forte. É
-        por isso que cada lado da montanha pode ter condições completamente diferentes.
+        Aumente o vento e observe: o rotor de sotavento só aparece com vento mais forte. É por isso
+        que cada lado da montanha pode ter condições completamente diferentes.
       </p>
     </div>
   );

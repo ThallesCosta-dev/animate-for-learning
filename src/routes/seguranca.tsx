@@ -1,43 +1,44 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Lesson } from "@/components/Lesson";
+import { LessonNav } from "@/components/LessonNav";
 import { Checklist } from "@/components/safety/Checklist";
 import { Scenarios } from "@/components/safety/Scenarios";
 import { Disclaimer } from "@/components/Disclaimer";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/seguranca")({
-  head: () => ({
-    meta: [
-      { title: "Segurança no parapente — Parapente Lab" },
-      {
-        name: "description",
-        content:
-          "Checklist pré-voo, fatores humanos e cenários de decisão: aprenda a pensar segurança antes, durante e depois do voo de parapente.",
-      },
-      { property: "og:title", content: "Segurança no parapente — Parapente Lab" },
-      {
-        property: "og:description",
-        content:
-          "Checklist pré-voo interativo e cenários de decisão para treinar o julgamento seguro no parapente.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: () =>
+    seo({
+      titulo: "Segurança no parapente",
+      descricao:
+        "Checklist pré-voo, fatores humanos e cenários de decisão: aprenda a pensar segurança antes, durante e depois do voo de parapente.",
+      path: "/seguranca",
+    }),
   component: SegurancaPage,
 });
+
+const NAV = [
+  { id: "antes-voo", titulo: "1. Antes do voo" },
+  { id: "durante-voo", titulo: "2. Durante o voo" },
+  { id: "depois-voo", titulo: "3. Depois do voo" },
+  { id: "checklist", titulo: "4. Checklist" },
+  { id: "cenarios", titulo: "5. Cenários" },
+];
 
 function SegurancaPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="font-display text-3xl font-extrabold">Segurança em primeiro lugar</h1>
       <p className="mt-2 text-muted-foreground">
-        A maioria dos acidentes envolve decisões, não equipamentos. Estas aulas treinam o
-        julgamento — antes, durante e depois do voo.
+        A maioria dos acidentes envolve decisões, não equipamentos. Estas aulas treinam o julgamento
+        — antes, durante e depois do voo.
       </p>
 
       <div className="mt-6">
         <Disclaimer compact />
       </div>
+
+      <LessonNav label="Aulas de segurança" itens={NAV} />
 
       <div className="mt-8 space-y-10">
         <Lesson
@@ -48,9 +49,9 @@ function SegurancaPage() {
           explicacao={
             <>
               <p>
-                A segurança começa em casa: estudar a previsão do tempo, conhecer o local, revisar
-                o equipamento e definir um plano de voo com limites claros ("se o vento passar de
-                X, eu não decolo").
+                A segurança começa em casa: estudar a previsão do tempo, conhecer o local, revisar o
+                equipamento e definir um plano de voo com limites claros ("se o vento passar de X,
+                eu não decolo").
               </p>
               <p>
                 Na rampa: observe o vento por pelo menos alguns minutos, veja os outros pilotos,
@@ -66,7 +67,11 @@ function SegurancaPage() {
           ]}
         >
           <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            📝 Aplique agora: complete o checklist interativo na aula 4 desta página.
+            📝 Aplique agora: complete o{" "}
+            <a href="#checklist" className="font-semibold text-primary underline">
+              checklist interativo da aula 4
+            </a>{" "}
+            desta página.
           </p>
         </Lesson>
 
@@ -95,7 +100,11 @@ function SegurancaPage() {
           ]}
         >
           <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            🎮 Treine a tomada de decisão nos cenários da aula 5 e no simulador de voo.
+            🎮 Treine a tomada de decisão nos{" "}
+            <a href="#cenarios" className="font-semibold text-primary underline">
+              cenários da aula 5
+            </a>{" "}
+            e no simulador de voo.
           </p>
         </Lesson>
 
@@ -136,11 +145,12 @@ function SegurancaPage() {
           explicacao={
             <>
               <p>
-                Memória falha — principalmente sob pressa ou pressão social. O checklist existe
-                para isso: uma rotina fixa que transforma verificação em hábito.
+                Memória falha — principalmente sob pressa ou pressão social. O checklist existe para
+                isso: uma rotina fixa que transforma verificação em hábito.
               </p>
               <p>
-                Complete o checklist interativo abaixo. Seu progresso fica salvo neste navegador.
+                Complete o checklist interativo abaixo. Seu progresso fica salvo neste navegador;
+                use "Recomeçar" a cada nova sessão.
               </p>
             </>
           }
@@ -173,7 +183,8 @@ function SegurancaPage() {
             "Na dúvida, a escolha mais conservadora costuma ser a certa",
           ]}
           quiz={{
-            question: "O vento aumentou além do previsto enquanto você preparava o equipamento. Você…",
+            question:
+              "O vento aumentou além do previsto enquanto você preparava o equipamento. Você…",
             options: [
               "Decola rápido antes que piore",
               "Espera, reavalia e, se continuar forte, não voa",

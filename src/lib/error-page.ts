@@ -1,9 +1,9 @@
 export function renderErrorPage(): string {
   return `<!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
-    <title>This page didn't load</title>
+    <title>Esta página não carregou</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       body { font: 15px/1.5 system-ui, -apple-system, sans-serif; background: #fafafa; color: #111; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 1.5rem; }
@@ -14,15 +14,21 @@ export function renderErrorPage(): string {
       a, button { padding: 0.5rem 1rem; border-radius: 0.375rem; font: inherit; cursor: pointer; text-decoration: none; border: 1px solid transparent; }
       .primary { background: #111; color: #fff; }
       .secondary { background: #fff; color: #111; border-color: #d1d5db; }
+      @media (prefers-color-scheme: dark) {
+        body { background: #1a2130; color: #f1f4f9; }
+        p { color: #b4bccb; }
+        .primary { background: #f1f4f9; color: #111; }
+        .secondary { background: #1a2130; color: #f1f4f9; border-color: #4b5563; }
+      }
     </style>
   </head>
   <body>
     <div class="card">
-      <h1>This page didn't load</h1>
-      <p>Something went wrong on our end. You can try refreshing or head back home.</p>
+      <h1>Esta página não carregou</h1>
+      <p>Algo deu errado do nosso lado. Tente recarregar ou volte para o início.</p>
       <div class="actions">
-        <button class="primary" onclick="location.reload()">Try again</button>
-        <a class="secondary" href="/">Go home</a>
+        <button class="primary" onclick="location.reload()">Tentar de novo</button>
+        <a class="secondary" href="/">Ir para o início</a>
       </div>
     </div>
   </body>

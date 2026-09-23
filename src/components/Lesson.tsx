@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useProgress } from "@/hooks/use-progress";
+import { ordemAleatoria } from "@/lib/shuffle";
 
 export interface QuizQuestion {
   question: string;
@@ -32,7 +33,7 @@ export function Lesson({
   quiz,
   nota,
 }: LessonProps) {
-  const { state, toggleLesson } = useProgress();
+  const { state, loaded, toggleLesson } = useProgress();
   const done = state.completedLessons.includes(id);
 
   return (
@@ -41,17 +42,13 @@ export function Lesson({
       aria-labelledby={`${id}-title`}
       className="scroll-mt-24 rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-8"
     >
-      <p className="text-xs font-semibold tracking-widest text-primary uppercase">
-        Aula {number}
-      </p>
+      <p className="text-xs font-semibold tracking-widest text-primary uppercase">Aula {number}</p>
       <h2 id={`${id}-title`} className="mt-1 text-2xl font-bold text-foreground">
         {title}
       </h2>
 
       <div className="mt-4 rounded-xl bg-accent/60 p-4">
-        <p className="text-sm font-semibold text-accent-foreground">
-          💭 Pergunta para começar
-        </p>
+        <p className="text-sm font-semibold text-accent-foreground">💭 Pergunta para começar</p>
         <p className="mt-1 text-lg font-medium text-foreground">{pergunta}</p>
       </div>
 
@@ -68,9 +65,7 @@ export function Lesson({
       )}
 
       <div className="mt-6 rounded-xl bg-secondary p-4">
-        <p className="text-sm font-semibold text-secondary-foreground">
-          📌 Resumo — o que lembrar
-        </p>
+        <p className="text-sm font-semibold text-secondary-foreground">📌 Resumo — o que lembrar</p>
         <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-foreground">
           {resumo.map((item) => (
             <li key={item}>{item}</li>
@@ -85,7 +80,8 @@ export function Lesson({
           type="button"
           onClick={() => toggleLesson(id)}
           aria-pressed={done}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+          disabled={!loaded}
+          className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
             done
               ? "bg-forest text-forest-foreground"
               : "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -93,16 +89,20 @@ export function Lesson({
         >
           {done ? "✓ Aula concluída" : "Marcar como concluída"}
         </button>
-        {done && (
-          <span className="text-sm text-forest">Salvo no seu progresso</span>
-        )}
+        {done && <span className="text-sm text-forest">Salvo no seu progresso</span>}
       </div>
     </section>
   );
 }
 
-export function MiniQuiz({ quiz }: { quiz: QuizQuestion }) {
+function MiniQuiz({ quiz }: { quiz: QuizQuestion }) {
   const [selected, setSelected] = useState<number | null>(null);
+  // Ordem de exibição embaralhada no cliente (o servidor renderiza na ordem original).
+  const [ordem, setOrdem] = useState<number[]>(() => quiz.options.map((_, i) => i));
+  useEffect(() => {
+    setOrdem(ordemAleatoria(quiz.options.length));
+  }, [quiz]);
+
   const answered = selected !== null;
   const correct = selected === quiz.answer;
 
@@ -111,7 +111,8 @@ export function MiniQuiz({ quiz }: { quiz: QuizQuestion }) {
       <p className="text-sm font-semibold text-primary">✏️ Mini quiz</p>
       <p className="mt-1 font-medium text-foreground">{quiz.question}</p>
       <div className="mt-3 grid gap-2">
-        {quiz.options.map((opt, i) => {
+        {ordem.map((i) => {
+          const opt = quiz.options[i]!;
           let style = "border-border bg-card hover:border-primary/50";
           if (answered) {
             if (i === quiz.answer) style = "border-forest bg-forest/15";
@@ -134,15 +135,11 @@ export function MiniQuiz({ quiz }: { quiz: QuizQuestion }) {
       {answered && (
         <div
           className={`mt-3 rounded-lg p-3 text-sm ${
-            correct
-              ? "bg-forest/15 text-foreground"
-              : "bg-destructive/10 text-foreground"
+            correct ? "bg-forest/15 text-foreground" : "bg-destructive/10 text-foreground"
           }`}
           role="status"
         >
-          <p className="font-semibold">
-            {correct ? "✓ Correto!" : "✗ Ainda não — veja por quê:"}
-          </p>
+          <p className="font-semibold">{correct ? "✓ Correto!" : "✗ Ainda não — veja por quê:"}</p>
           <p className="mt-1">{quiz.explanation}</p>
         </div>
       )}

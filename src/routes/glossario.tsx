@@ -1,26 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { GLOSSARIO } from "@/lib/glossary-data";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/glossario")({
-  head: () => ({
-    meta: [
-      { title: "Glossário de parapente — Parapente Lab" },
-      {
-        name: "description",
-        content:
-          "Glossário pesquisável com os termos essenciais do parapente: aerodinâmica, meteorologia, segurança e equipamento.",
-      },
-      { property: "og:title", content: "Glossário de parapente — Parapente Lab" },
-      {
-        property: "og:description",
-        content:
-          "Consulte rapidamente termos como ângulo de ataque, estol, térmica, rotor, carga alar e muito mais.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: () =>
+    seo({
+      titulo: "Glossário de parapente",
+      descricao:
+        "Glossário pesquisável com os termos essenciais do parapente: definição simples e explicação técnica sobre aerodinâmica, meteorologia, segurança e equipamento.",
+      path: "/glossario",
+    }),
   component: GlossarioPage,
 });
 
@@ -32,16 +22,21 @@ const FILTROS = [
   { id: "equipamento", nome: "Equipamento" },
 ] as const;
 
+type Filtro = (typeof FILTROS)[number]["id"];
+
 function GlossarioPage() {
   const [busca, setBusca] = useState("");
-  const [filtro, setFiltro] = useState<string>("todas");
+  const [filtro, setFiltro] = useState<Filtro>("todas");
 
   const lista = useMemo(() => {
     const q = busca.trim().toLowerCase();
     return GLOSSARIO.filter(
       (t) =>
         (filtro === "todas" || t.area === filtro) &&
-        (q === "" || t.termo.toLowerCase().includes(q) || t.definicao.toLowerCase().includes(q))
+        (q === "" ||
+          t.termo.toLowerCase().includes(q) ||
+          t.definicao.toLowerCase().includes(q) ||
+          t.tecnico.toLowerCase().includes(q)),
     ).sort((a, b) => a.termo.localeCompare(b.termo, "pt-BR"));
   }, [busca, filtro]);
 
@@ -49,7 +44,8 @@ function GlossarioPage() {
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="font-display text-3xl font-extrabold">Glossário</h1>
       <p className="mt-2 text-muted-foreground">
-        {GLOSSARIO.length} termos do universo do parapente, em linguagem simples.
+        {GLOSSARIO.length} termos do universo do parapente: definição simples e, abaixo dela, a
+        explicação técnica.
       </p>
 
       <label className="mt-6 block">
@@ -71,7 +67,9 @@ function GlossarioPage() {
             aria-pressed={filtro === f.id}
             onClick={() => setFiltro(f.id)}
             className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-              filtro === f.id ? "bg-primary text-primary-foreground" : "bg-secondary hover:bg-accent"
+              filtro === f.id
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary hover:bg-accent"
             }`}
           >
             {f.nome}
@@ -88,6 +86,10 @@ function GlossarioPage() {
           <div key={t.termo} className="rounded-xl border border-border bg-card p-4">
             <dt className="font-display font-bold text-primary">{t.termo}</dt>
             <dd className="mt-1 text-sm text-foreground/90">{t.definicao}</dd>
+            <dd className="mt-2 border-l-2 border-border pl-3 text-xs leading-relaxed text-muted-foreground">
+              <span className="font-semibold">Explicação técnica: </span>
+              {t.tecnico}
+            </dd>
           </div>
         ))}
       </dl>
