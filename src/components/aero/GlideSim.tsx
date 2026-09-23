@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SimCanvas } from "@/components/SimCanvas";
 import { Slider } from "@/components/Slider";
+import { CORES } from "@/lib/colors";
 
 // Planeio: trajetória sobre o terreno conforme razão de planeio e vento.
 export function GlideSim() {
@@ -35,7 +36,7 @@ export function GlideSim() {
     ctx.closePath();
     ctx.fill();
 
-    // Trajetória: sobe razão de planeio em px
+    // Trajetória
     const quedaPx = soloY - startY;
     const runPx = Math.min(w - startX - 20, quedaPx * (alcanceRel / 3));
     const endX = startX + runPx;
@@ -55,7 +56,7 @@ export function GlideSim() {
     ctx.moveTo(startX, startY);
     ctx.lineTo(startX + 90, startY);
     ctx.stroke();
-    ctx.fillStyle = "rgba(60,80,110,0.9)";
+    ctx.fillStyle = CORES.textoSuave;
     ctx.font = "12px Manrope, sans-serif";
     ctx.textAlign = "left";
     const angulo = (Math.atan2(quedaPx, runPx) * 180) / Math.PI;
@@ -70,18 +71,22 @@ export function GlideSim() {
     ctx.fillText("🪂", px, py);
 
     // Setas de distância e altitude
-    ctx.strokeStyle = "#0a7a3d";
-    ctx.fillStyle = "#0a7a3d";
+    ctx.strokeStyle = CORES.solo;
+    ctx.fillStyle = CORES.solo;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(startX, soloY + 16);
     ctx.lineTo(endX, soloY + 16);
     ctx.stroke();
     ctx.font = "bold 12px Manrope, sans-serif";
-    ctx.fillText(`distância no solo ∝ ${alcanceRel.toFixed(1)} (ilustrativo)`, (startX + endX) / 2, soloY + 32);
+    ctx.fillText(
+      `distância no solo ∝ ${alcanceRel.toFixed(1)} (ilustrativo)`,
+      (startX + endX) / 2,
+      soloY + 32,
+    );
 
-    ctx.strokeStyle = "#7a3d0a";
-    ctx.fillStyle = "#7a3d0a";
+    ctx.strokeStyle = CORES.peso;
+    ctx.fillStyle = CORES.peso;
     ctx.beginPath();
     ctx.moveTo(startX - 14, startY);
     ctx.lineTo(startX - 14, soloY);
@@ -94,7 +99,7 @@ export function GlideSim() {
 
     // Indicação do vento
     if (vento !== 0) {
-      ctx.fillStyle = vento > 0 ? "#7c3aed" : "#b03030";
+      ctx.fillStyle = vento > 0 ? CORES.vento : CORES.arrasto;
       ctx.font = "bold 13px Manrope, sans-serif";
       ctx.textAlign = "left";
       const dir = vento > 0 ? "→→→ vento de cauda" : "←←← vento de frente";
@@ -108,23 +113,38 @@ export function GlideSim() {
         draw={draw}
         height={320}
         label="Trajetória de planeio de um parapente sobre o terreno, influenciada pelo vento"
-        deps={[razao, vento, animar]}
+        paused={!animar}
       />
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <Slider label="Razão de planeio (didática)" value={razao} min={5} max={12} unit=": 1" onChange={setRazao} />
-        <Slider label="Vento (− frente / + cauda)" value={vento} min={-20} max={20} unit="km/h" onChange={setVento} />
+        <Slider
+          label="Razão de planeio (didática)"
+          value={razao}
+          min={5}
+          max={12}
+          unit=": 1"
+          onChange={setRazao}
+        />
+        <Slider
+          label="Vento (− frente / + cauda)"
+          value={vento}
+          min={-20}
+          max={20}
+          unit="km/h"
+          onChange={setVento}
+        />
       </div>
       <button
         type="button"
         onClick={() => setAnimar((v) => !v)}
+        aria-pressed={animar}
         className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
       >
         {animar ? "⏸ Pausar" : "▶ Animar"}
       </button>
       <p className="mt-3 text-sm text-muted-foreground">
-        A razão de planeio diz quantos metros a asa avança para cada metro que desce, em ar
-        calmo. Vento de frente encurta o alcance sobre o solo; vento de cauda estica — mas
-        aumenta a velocidade de aproximação no pouso. Valores ilustrativos.
+        A razão de planeio diz quantos metros a asa avança para cada metro que desce, em ar calmo.
+        Vento de frente encurta o alcance sobre o solo; vento de cauda estica — mas aumenta a
+        velocidade de aproximação no pouso. Valores ilustrativos.
       </p>
     </div>
   );

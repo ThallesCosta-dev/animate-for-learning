@@ -1,32 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Lesson } from "@/components/Lesson";
+import { LessonNav } from "@/components/LessonNav";
+import { Convection } from "@/components/meteo/Convection";
 import { ThermalSim } from "@/components/meteo/ThermalSim";
 import { ThermalLifecycle } from "@/components/meteo/ThermalLifecycle";
 import { MountainWind } from "@/components/meteo/MountainWind";
 import { ValleyBreeze } from "@/components/meteo/ValleyBreeze";
 import { Clouds } from "@/components/meteo/Clouds";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/meteorologia")({
-  head: () => ({
-    meta: [
-      { title: "Meteorologia para parapente — Parapente Lab" },
-      {
-        name: "description",
-        content:
-          "Entenda térmicas, brisas de vale, vento e relevo e nuvens: animações interativas de meteorologia aplicada ao voo de parapente.",
-      },
-      { property: "og:title", content: "Meteorologia para parapente — Parapente Lab" },
-      {
-        property: "og:description",
-        content:
-          "Térmicas, ciclo de vida, vento e relevo, brisa de vale e nuvens explicados com animações interativas.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: () =>
+    seo({
+      titulo: "Meteorologia para parapente",
+      descricao:
+        "Entenda convecção, térmicas, brisas de vale, vento e relevo e nuvens: animações interativas de meteorologia aplicada ao voo de parapente.",
+      path: "/meteorologia",
+    }),
   component: MeteorologiaPage,
 });
+
+const NAV = [
+  { id: "meteo-fundamentos", titulo: "1. Fundamentos" },
+  { id: "termica", titulo: "2. Térmicas" },
+  { id: "ciclo-termica", titulo: "3. Ciclo da térmica" },
+  { id: "vento-relevo", titulo: "4. Vento e relevo" },
+  { id: "brisa", titulo: "5. Brisas" },
+  { id: "nuvens", titulo: "6. Nuvens" },
+];
 
 function MeteorologiaPage() {
   return (
@@ -36,6 +37,8 @@ function MeteorologiaPage() {
         O parapente não tem motor: voar é ler o ar. Seis aulas para entender de onde vem a
         sustentação que a natureza oferece — e quando o céu está dizendo "hoje não".
       </p>
+
+      <LessonNav label="Aulas de meteorologia" itens={NAV} />
 
       <div className="mt-8 space-y-10">
         <Lesson
@@ -47,13 +50,14 @@ function MeteorologiaPage() {
             <>
               <p>
                 O sol aquece o solo de forma desigual — rocha esquenta mais que floresta, que
-                esquenta mais que água. O ar em contato com o solo quente esquenta, fica menos
-                denso e <strong>sobe</strong>; o ar mais frio desce para ocupar o lugar. Esse
-                movimento é a <strong>convecção</strong>.
+                esquenta mais que água. O ar em contato com o solo quente esquenta, fica menos denso
+                e <strong>sobe</strong>; o ar mais frio desce para ocupar o lugar. Esse movimento é
+                a <strong>convecção</strong>.
               </p>
               <p>
-                Na simulação da próxima aula você verá isso acontecendo. O essencial aqui: quase
-                todo vento e toda térmica começam com diferenças de temperatura.
+                Na animação, veja o ar quente subir sobre a rocha, o ar frio descer sobre a água e,
+                junto ao chão, o ar frio escorrer em direção à rocha: esse escorrimento já é um
+                vento local. Quase todo vento e toda térmica começam com diferenças de temperatura.
               </p>
             </>
           }
@@ -62,11 +66,15 @@ function MeteorologiaPage() {
             "Ar quente é menos denso e sobe; ar frio desce",
             "Diferenças de temperatura criam ventos e térmicas",
           ]}
+          quiz={{
+            question: "Sobre qual superfície o ar tende a subir com mais força num dia de sol?",
+            options: ["Lago", "Rocha exposta", "Floresta densa", "Todas igualmente"],
+            answer: 1,
+            explanation:
+              "A rocha esquenta rápido e transfere muito calor ao ar. A água esquenta pouco e devagar — por isso sobre lagos o ar tende a descer.",
+          }}
         >
-          <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            👇 Aplique estes fundamentos na simulação da próxima aula: escolha o terreno, o
-            horário e veja a térmica nascer.
-          </p>
+          <Convection />
         </Lesson>
 
         <Lesson
@@ -78,9 +86,8 @@ function MeteorologiaPage() {
             <>
               <p>
                 A <strong>térmica</strong> é uma coluna de ar quente ascendente. Ela nasce sobre
-                superfícies que esquentam muito (rocha, solo seco, campos), ganha força no início
-                da tarde e enfraquece com vento forte — que "picota" as bolhas antes que se
-                organizem.
+                superfícies que esquentam muito (rocha, solo seco, campos), ganha força no início da
+                tarde e enfraquece com vento forte — que "picota" as bolhas antes que se organizem.
               </p>
               <p>
                 Experimente na simulação: mude o terreno, o horário, o vento e a umidade, e veja
@@ -118,12 +125,12 @@ function MeteorologiaPage() {
             <>
               <p>
                 Térmicas têm ciclo de vida: o solo aquece, a bolha de ar quente se acumula, se
-                desprende, sobe, se organiza em coluna e pode formar um cumulus no topo. Depois,
-                sem aquecimento, ela se dissolve.
+                desprende, sobe, se organiza em coluna e pode formar um cumulus no topo. Depois, sem
+                aquecimento, ela se dissolve.
               </p>
               <p>
-                Use o Play e os controles de etapa para assistir o ciclo completo, na velocidade
-                que preferir.
+                Use o botão de reproduzir e os controles de etapa para assistir ao ciclo completo,
+                na velocidade que preferir.
               </p>
             </>
           }
@@ -184,8 +191,9 @@ function MeteorologiaPage() {
           explicacao={
             <>
               <p>
-                De dia, as encostas aquecem e o ar sobe pelo vale: é a <strong>brisa de vale</strong>{" "}
-                (anabática), que muitas vezes torna a decolagem possível.
+                De dia, as encostas aquecem e o ar sobe pelo vale: é a{" "}
+                <strong>brisa de vale</strong> (anabática), que muitas vezes torna a decolagem
+                possível.
               </p>
               <p>
                 À noite, as encostas esfriam e o ar frio, mais denso, desce: é a{" "}

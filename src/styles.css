@@ -1,6 +1,5 @@
 @import "tailwindcss" source(none);
 @source "../src";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -35,6 +34,8 @@
   --color-skyblue: var(--skyblue);
   --color-forest: var(--forest);
   --color-forest-foreground: var(--forest-foreground);
+  --color-wind: var(--wind);
+  --color-rust: var(--rust);
   --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 }
@@ -66,6 +67,10 @@
   --skyblue: oklch(0.78 0.1 225);
   --forest: oklch(0.62 0.12 155);
   --forest-foreground: oklch(0.98 0.01 155);
+  /* vento (roxo) e piloto B / ferrugem, usados em legendas das simulações */
+  --wind: oklch(0.52 0.22 300);
+  --rust: oklch(0.55 0.17 45);
+  color-scheme: light;
 }
 
 .dark {
@@ -93,6 +98,9 @@
   --skyblue: oklch(0.7 0.1 230);
   --forest: oklch(0.6 0.12 155);
   --forest-foreground: oklch(0.98 0.01 155);
+  --wind: oklch(0.75 0.16 300);
+  --rust: oklch(0.75 0.15 50);
+  color-scheme: dark;
 }
 
 @layer base {
@@ -106,14 +114,19 @@
     font-family: var(--font-sans);
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
   }
 }
 
 /* Acessibilidade: respeita a preferência do sistema por menos movimento */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

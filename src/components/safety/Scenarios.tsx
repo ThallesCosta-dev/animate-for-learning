@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTabKeys } from "@/hooks/use-tab-keys";
 
 interface Cenario {
   id: string;
@@ -90,27 +91,34 @@ const CENARIOS: Cenario[] = [
 
 // Cenários de decisão: escolha a resposta e veja a explicação.
 export function Scenarios() {
-  const [cenarioId, setCenarioId] = useState(CENARIOS[0]!.id);
+  const [indice, setIndice] = useState(0);
   const [escolha, setEscolha] = useState<number | null>(null);
-  const cenario = CENARIOS.find((c) => c.id === cenarioId)!;
+  const cenario = CENARIOS[indice]!;
 
-  const mudar = (id: string) => {
-    setCenarioId(id);
+  const mudar = (i: number) => {
+    setIndice(i);
     setEscolha(null);
   };
+  const onKeyDown = useTabKeys(CENARIOS.length, indice, mudar);
 
   return (
     <div>
       <div className="mb-4 flex flex-wrap gap-2" role="tablist" aria-label="Cenários de decisão">
-        {CENARIOS.map((c) => (
+        {CENARIOS.map((c, i) => (
           <button
             key={c.id}
+            id={`cenario-tab-${c.id}`}
             type="button"
             role="tab"
-            aria-selected={cenarioId === c.id}
-            onClick={() => mudar(c.id)}
+            aria-selected={indice === i}
+            aria-controls={`cenario-painel-${c.id}`}
+            tabIndex={indice === i ? 0 : -1}
+            onClick={() => mudar(i)}
+            onKeyDown={onKeyDown}
             className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-              cenarioId === c.id ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent"
+              indice === i
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-accent"
             }`}
           >
             {c.titulo}
@@ -118,7 +126,12 @@ export function Scenarios() {
         ))}
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-5">
+      <div
+        id={`cenario-painel-${cenario.id}`}
+        role="tabpanel"
+        aria-labelledby={`cenario-tab-${cenario.id}`}
+        className="rounded-xl border border-border bg-card p-5"
+      >
         <h3 className="font-display text-lg font-bold">{cenario.titulo}</h3>
         <p className="mt-2 text-foreground/90">{cenario.situacao}</p>
         <p className="mt-3 text-sm font-semibold text-primary">O que você faz?</p>
@@ -131,10 +144,11 @@ export function Scenarios() {
                 : "border-destructive bg-destructive/10"
               : "border-border hover:bg-accent/40";
             return (
-              <li key={i}>
+              <li key={op.texto}>
                 <button
                   type="button"
                   onClick={() => setEscolha(i)}
+                  aria-pressed={escolhida}
                   className={`w-full rounded-lg border p-3 text-left text-sm transition-colors ${cor}`}
                 >
                   {op.texto}
@@ -152,15 +166,17 @@ export function Scenarios() {
             aria-live="polite"
           >
             <p className="font-bold">
-              {cenario.opcoes[escolha]!.correta ? "✅ Boa decisão!" : "⚠️ Atenção — essa escolha tem riscos."}
+              {cenario.opcoes[escolha]!.correta
+                ? "✅ Boa decisão!"
+                : "⚠️ Atenção — essa escolha tem riscos."}
             </p>
             <p className="mt-1 text-foreground/90">{cenario.opcoes[escolha]!.explicacao}</p>
           </div>
         )}
       </div>
       <p className="mt-3 text-sm text-muted-foreground">
-        Estes cenários são didáticos e simplificados. Situações reais exigem julgamento
-        treinado com um instrutor habilitado.
+        Estes cenários são didáticos e simplificados. Situações reais exigem julgamento treinado com
+        um instrutor habilitado.
       </p>
     </div>
   );

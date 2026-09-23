@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { SimCanvas } from "@/components/SimCanvas";
 import { Slider } from "@/components/Slider";
+import { seta } from "@/lib/aero";
+import { CORES } from "@/lib/colors";
 
 // Vento relativo x vento real: composição vetorial.
 // vetor solo = vetor ar (proa + velocidade aerodinâmica) + vetor vento
@@ -46,35 +48,23 @@ export function WindVectors() {
     ctx.fillText("L", cx + 132, cy + 4);
     ctx.fillText("O", cx - 132, cy + 4);
 
-    const setaLocal = (x1: number, y1: number, x2: number, y2: number, cor: string, rotulo: string, largura = 3) => {
-      const ang = Math.atan2(y2 - y1, x2 - x1);
-      ctx.strokeStyle = cor;
-      ctx.fillStyle = cor;
-      ctx.lineWidth = largura;
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-      const p = 9;
-      ctx.beginPath();
-      ctx.moveTo(x2, y2);
-      ctx.lineTo(x2 - p * Math.cos(ang - 0.45), y2 - p * Math.sin(ang - 0.45));
-      ctx.lineTo(x2 - p * Math.cos(ang + 0.45), y2 - p * Math.sin(ang + 0.45));
-      ctx.closePath();
-      ctx.fill();
-      ctx.font = "bold 13px Manrope, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(rotulo, x2, y2 - 10);
-    };
-
     // Vetor ar (azul): para onde a asa aponta
-    setaLocal(cx, cy, cx + ar.x * esc, cy - ar.y * esc, "#1d4ed8", "No ar");
+    seta(ctx, cx, cy, cx + ar.x * esc, cy - ar.y * esc, CORES.ar, "No ar");
     // Vetor vento (roxo): deslocamento da massa de ar
-    setaLocal(cx + ar.x * esc, cy - ar.y * esc, cx + solo.x * esc, cy - solo.y * esc, "#7c3aed", "Vento");
+    seta(
+      ctx,
+      cx + ar.x * esc,
+      cy - ar.y * esc,
+      cx + solo.x * esc,
+      cy - solo.y * esc,
+      CORES.vento,
+      "Vento",
+    );
     // Vetor solo (verde): resultado sobre o terreno
-    setaLocal(cx, cy, cx + solo.x * esc, cy - solo.y * esc, "#0a7a3d", "No solo", 4);
+    seta(ctx, cx, cy, cx + solo.x * esc, cy - solo.y * esc, CORES.solo, "No solo", 4);
 
     ctx.font = "22px sans-serif";
+    ctx.textAlign = "center";
     ctx.fillText("🪂", cx, cy + 8);
   };
 
@@ -84,13 +74,40 @@ export function WindVectors() {
         draw={draw}
         height={340}
         label="Diagrama vetorial: velocidade no ar, vento e velocidade resultante sobre o solo"
-        deps={[proa, velAr, dirVento, velVento]}
       />
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <Slider label="Direção do voo (proa)" value={proa} min={0} max={359} unit="°" onChange={setProa} />
-        <Slider label="Velocidade no ar" value={velAr} min={20} max={55} unit="km/h" onChange={setVelAr} />
-        <Slider label="Vento vem de" value={dirVento} min={0} max={359} unit="°" onChange={setDirVento} />
-        <Slider label="Velocidade do vento" value={velVento} min={0} max={45} unit="km/h" onChange={setVelVento} />
+        <Slider
+          label="Direção do voo (proa)"
+          value={proa}
+          min={0}
+          max={359}
+          unit="°"
+          onChange={setProa}
+        />
+        <Slider
+          label="Velocidade no ar"
+          value={velAr}
+          min={20}
+          max={55}
+          unit="km/h"
+          onChange={setVelAr}
+        />
+        <Slider
+          label="Vento vem de"
+          value={dirVento}
+          min={0}
+          max={359}
+          unit="°"
+          onChange={setDirVento}
+        />
+        <Slider
+          label="Velocidade do vento"
+          value={velVento}
+          min={0}
+          max={45}
+          unit="km/h"
+          onChange={setVelVento}
+        />
       </div>
       <div className="mt-4 grid grid-cols-3 gap-3" aria-live="polite">
         <div className="rounded-lg border border-border bg-card p-3 text-center">
@@ -99,7 +116,7 @@ export function WindVectors() {
         </div>
         <div className="rounded-lg border border-border bg-card p-3 text-center">
           <p className="text-xs text-muted-foreground">Vento</p>
-          <p className="text-lg font-bold tabular-nums" style={{ color: "#7c3aed" }}>{velVento} km/h</p>
+          <p className="text-lg font-bold text-wind tabular-nums">{velVento} km/h</p>
         </div>
         <div className="rounded-lg border border-border bg-card p-3 text-center">
           <p className="text-xs text-muted-foreground">Velocidade no solo</p>
@@ -109,8 +126,8 @@ export function WindVectors() {
         </div>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">
-        Valores ilustrativos. Repare: com vento de cauda o solo fica mais rápido que o ar;
-        com vento de frente, mais lento — e a direção sobre o terreno muda.
+        Valores ilustrativos. Repare: com vento de cauda o solo fica mais rápido que o ar; com vento
+        de frente, mais lento — e a direção sobre o terreno muda.
       </p>
     </div>
   );

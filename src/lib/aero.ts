@@ -37,7 +37,7 @@ export function desenharPerfil(
   cx: number,
   cy: number,
   corda: number,
-  aoaGraus: number
+  aoaGraus: number,
 ) {
   const espessura = corda * 0.16;
   ctx.save();
@@ -62,7 +62,7 @@ export function seta(
   y2: number,
   cor: string,
   rotulo?: string,
-  largura = 3
+  largura = 3,
 ) {
   const ang = Math.atan2(y2 - y1, x2 - x1);
   ctx.strokeStyle = cor;
@@ -83,6 +83,10 @@ export function seta(
   if (rotulo) {
     ctx.font = "bold 13px Manrope, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(rotulo, x2 + 12 * Math.cos(ang + Math.PI / 2), y2 + 12 * Math.sin(ang + Math.PI / 2) - 6);
+    ctx.fillText(
+      rotulo,
+      x2 + 12 * Math.cos(ang + Math.PI / 2),
+      y2 + 12 * Math.sin(ang + Math.PI / 2) - 6,
+    );
   }
 }

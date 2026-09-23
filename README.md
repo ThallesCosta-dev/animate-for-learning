@@ -1,26 +1,48 @@
-# Learn with Motion
+# Parapente Lab
 
-Você tem alguma dúvida e pode usar a tecnologia que deixar as animações mais didáticas, mas que sejam bibliotecas livres por cdn?
+Aplicativo educacional em português sobre parapente: aerodinâmica, meteorologia e segurança,
+com animações interativas em canvas, gráfico (Chart.js), simulador de voo (Phaser), quiz,
+glossário e progresso salvo no navegador.
 
-This project was built with [Lovable](https://lovable.dev).
+**App publicado**: https://animate-for-learning.lovable.app
 
-**Live app**: https://animate-for-learning.lovable.app
+> Ferramenta educacional. Não substitui instrução prática com instrutor habilitado. Os modelos
+> físicos são simplificados e os valores numéricos são ilustrativos.
 
-## Build with Lovable
+## Stack
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/4c68c706-c2ed-45a3-b5b5-eaf062ac5392).
+- React 19 + TypeScript
+- TanStack Start / Router (rotas por arquivo em `src/routes/`)
+- Tailwind CSS 4
+- Canvas 2D para as simulações (`src/components/aero`, `src/components/meteo`)
+- Chart.js (gráfico sustentação × arrasto) e Phaser (simulador de voo), carregados sob demanda
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+## Desenvolvimento
 
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+O projeto usa [bun](https://bun.sh) (há um `bun.lock` versionado). Com npm também funciona, mas
+não versione o `package-lock.json`.
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev        # servidor de desenvolvimento
+bun run build      # build de produção
+bun run typecheck  # tsc --noEmit
+bun run lint       # eslint
+bun run format     # prettier --write
 ```
+
+## Estrutura
+
+| Pasta                     | Conteúdo                                                         |
+| ------------------------- | ---------------------------------------------------------------- |
+| `src/routes/`             | páginas (início, aprender, meteorologia, segurança, simulador…) |
+| `src/components/`         | `Lesson`, `SimCanvas`, header, simulações por área               |
+| `src/lib/`                | modelo físico didático, dados de quiz/glossário, progresso, SEO  |
+| `src/hooks/`              | `useProgress`, `useReducedMotion`, navegação por teclado em abas |
+| `public/`                 | favicon, imagem do hero, imagem Open Graph, sitemap, robots      |
+
+## Lovable
+
+Este projeto está conectado ao [Lovable](https://lovable.dev/projects/4c68c706-c2ed-45a3-b5b5-eaf062ac5392).
+Commits enviados para `main` sincronizam com o editor. Não reescreva o histórico publicado
+(force push, rebase ou squash de commits já enviados).

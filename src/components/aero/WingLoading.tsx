@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SimCanvas } from "@/components/SimCanvas";
 import { Slider } from "@/components/Slider";
+import { CORES } from "@/lib/colors";
 
 // Carga alar: dois conjuntos piloto+asa com configurações diferentes.
 export function WingLoading() {
@@ -19,7 +20,7 @@ export function WingLoading() {
     area: number,
     cor: string,
     t: number,
-    carga: number
+    carga: number,
   ) => {
     const envergadura = 60 + area * 2.4;
     const balanco = Math.sin(t * (1 + carga * 0.25)) * 2;
@@ -56,8 +57,8 @@ export function WingLoading() {
     ctx.fillStyle = "rgba(90,140,90,0.4)";
     ctx.fillRect(0, soloY, w, h - soloY);
 
-    drawGlider(ctx, w * 0.25, 70, areaA, "#1d4ed8", t, cargaA);
-    drawGlider(ctx, w * 0.75, 70, areaB, "#c2500a", t, cargaB);
+    drawGlider(ctx, w * 0.25, 70, areaA, CORES.pilotoA, t, cargaA);
+    drawGlider(ctx, w * 0.75, 70, areaB, CORES.pilotoB, t, cargaB);
 
     // Velocidade relativa de descida (didática): carga maior ⇒ desce/planeia mais rápido
     const descA = 1 + cargaA * 0.35;
@@ -69,11 +70,11 @@ export function WingLoading() {
     ctx.fillStyle = "rgba(194,80,10,0.25)";
     ctx.fillRect(w * 0.75 - 2, 70, 4, yB - 70);
 
-    ctx.fillStyle = "#1d4ed8";
+    ctx.fillStyle = CORES.pilotoA;
     ctx.font = "bold 13px Manrope, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(`Piloto A — carga alar ${cargaA.toFixed(1)} kg/m²`, w * 0.25, h - 6);
-    ctx.fillStyle = "#c2500a";
+    ctx.fillStyle = CORES.pilotoB;
     ctx.fillText(`Piloto B — carga alar ${cargaB.toFixed(1)} kg/m²`, w * 0.75, h - 6);
   };
 
@@ -87,19 +88,47 @@ export function WingLoading() {
       <div className="mt-4 grid gap-6 sm:grid-cols-2">
         <fieldset className="rounded-xl border border-border p-3">
           <legend className="px-1 text-sm font-semibold text-primary">Piloto A</legend>
-          <Slider label="Peso total" value={pesoA} min={55} max={130} unit="kg" onChange={setPesoA} />
-          <Slider label="Área da asa" value={areaA} min={18} max={34} unit="m²" onChange={setAreaA} />
+          <Slider
+            label="Peso total"
+            value={pesoA}
+            min={55}
+            max={130}
+            unit="kg"
+            onChange={setPesoA}
+          />
+          <Slider
+            label="Área da asa"
+            value={areaA}
+            min={18}
+            max={34}
+            unit="m²"
+            onChange={setAreaA}
+          />
         </fieldset>
         <fieldset className="rounded-xl border border-border p-3">
-          <legend className="px-1 text-sm font-semibold" style={{ color: "#c2500a" }}>Piloto B</legend>
-          <Slider label="Peso total" value={pesoB} min={55} max={130} unit="kg" onChange={setPesoB} />
-          <Slider label="Área da asa" value={areaB} min={18} max={34} unit="m²" onChange={setAreaB} />
+          <legend className="px-1 text-sm font-semibold text-rust">Piloto B</legend>
+          <Slider
+            label="Peso total"
+            value={pesoB}
+            min={55}
+            max={130}
+            unit="kg"
+            onChange={setPesoB}
+          />
+          <Slider
+            label="Área da asa"
+            value={areaB}
+            min={18}
+            max={34}
+            unit="m²"
+            onChange={setAreaB}
+          />
         </fieldset>
       </div>
       <p className="mt-3 rounded-lg border border-border bg-muted p-3 text-xs text-muted-foreground">
-        Carga alar = peso total ÷ área da asa. No modelo didático, carga maior tende a voar e
-        descer mais rápido. Isto NÃO é recomendação para escolher tamanho de asa — essa
-        decisão depende do fabricante, do seu nível e de um instrutor.
+        Carga alar = peso total ÷ área da asa. No modelo didático, carga maior tende a voar e descer
+        mais rápido. Isto NÃO é recomendação para escolher tamanho de asa — essa decisão depende do
+        fabricante, do seu nível e de um instrutor.
       </p>
     </div>
   );
