@@ -85,16 +85,16 @@ function HomePage() {
           <figure className="overflow-hidden rounded-2xl border border-border shadow-lg">
             <img
               src="/parapente-decolagem.webp"
-              width={960}
-              height={1280}
-              alt="Piloto de parapente decolando de uma encosta com a vela inflada acima"
+              width={425}
+              height={528}
+              alt="Piloto de parapente inflando a vela verde numa rampa de decolagem, com o vale ao fundo"
               className="h-full max-h-[420px] w-full object-cover"
               loading="eager"
               fetchPriority="high"
               decoding="async"
             />
             <figcaption className="bg-card px-3 py-2 text-xs text-muted-foreground">
-              Foto real de decolagem de parapente (Wikimedia Commons, uso livre).
+              Decolagem de parapente em rampa de voo livre.
             </figcaption>
           </figure>
         </div>
