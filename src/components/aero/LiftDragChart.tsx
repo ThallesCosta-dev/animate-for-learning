@@ -92,7 +92,7 @@ export function LiftDragChart() {
         <canvas ref={canvasRef} role="img" aria-label="Gráfico das curvas de sustentação e arrasto em função da velocidade" />
       </div>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <Slider label="Ângulo de ataque" value={aoa} min={2} max={14} unit="°" onChange={setAoa} />
+        <Slider label="Ângulo de ataque" value={aoa} min={-10} max={22} unit="°" onChange={setAoa} />
         <Slider label="Velocidade (marcador)" value={marcador} min={15} max={65} unit="km/h" onChange={setMarcador} />
       </div>
       <p className="mt-3 rounded-lg border border-border bg-muted p-3 text-xs text-muted-foreground">
