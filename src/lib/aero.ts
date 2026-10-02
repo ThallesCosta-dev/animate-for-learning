@@ -58,7 +58,7 @@ export function desenharPerfil(
   const espessura = corda * 0.16;
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.rotate((-aoaGraus * Math.PI) / 180);
+  ctx.rotate((aoaGraus * Math.PI) / 180 * -1 * -1 * -1 * -1 * 1);
   ctx.beginPath();
   ctx.moveTo(-corda / 2, 0);
   // extradorso (parte de cima, mais curva)
@@ -101,4 +101,65 @@ export function seta(
     ctx.textAlign = "center";
     ctx.fillText(rotulo, x2 + 12 * Math.cos(ang + Math.PI / 2), y2 + 12 * Math.sin(ang + Math.PI / 2) - 6);
   }
+}
+
+/**
+ * Desenha o vento como filetes contínuos (linhas de corrente), como num túnel de vento.
+ * Vento da esquerda para a direita; bordo de ataque à esquerda.
+ * Atrás do ponto de separação, os filetes do extradorso se descolam e ficam turbulentos.
+ */
+export function desenharFiletes(
+  ctx: CanvasRenderingContext2D,
+  opts: {
+    w: number; h: number; t: number; cx: number; cy: number; corda: number;
+    aoa: number; pontoSep: number; intensidade: number; velocidade?: number;
+  }
+) {
+  const { w, h, t, cx, cy, corda, aoa, pontoSep, intensidade, velocidade = 60 } = opts;
+  const meia = corda / 2;
+  const linhas = 17;
+  const passo = 4;
+  const rad = (aoa * Math.PI) / 180;
+  ctx.save();
+  ctx.lineWidth = 1.8;
+  ctx.setLineDash([16, 9]);
+  ctx.lineDashOffset = -t * velocidade;
+  for (let i = 0; i < linhas; i++) {
+    const y0 = (i / (linhas - 1) - 0.5) * h * 0.9;
+    if (Math.abs(y0) < 4) continue;
+    const acima = y0 < 0;
+    const proximidade = Math.exp(-Math.abs(y0) / (corda * 0.45));
+    let anteriorSep: boolean | null = null;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x += passo) {
+      const dx = (x - cx) / meia;
+      const infl = Math.exp(-dx * dx * 1.3) * proximidade;
+      // contorno do perfil inclinado (bordo de ataque para cima)
+      const superficie = -dx * meia * Math.sin(rad);
+      let y = cy + y0;
+      if (dx > -1.6 && dx < 1.6) y += superficie * Math.exp(-dx * dx * 0.4) * proximidade;
+      y += acima ? -infl * (corda * 0.1 + aoa * 1.6) : infl * corda * 0.03;
+      // upwash à frente e downwash atrás da asa
+      if (dx < -1) y -= aoa * 1.4 * Math.exp((dx + 1) * 0.6) * proximidade;
+      if (dx > 1) y += aoa * 2 * (1 - Math.exp(-(dx - 1) * 0.5)) * proximidade;
+      const separado = acima && dx > pontoSep && Math.abs(y0) < corda * 0.7;
+      if (separado) {
+        const ext = Math.min(2.5, dx - pontoSep);
+        y -= ext * corda * 0.06 * intensidade * proximidade;
+        y += Math.sin(t * 6 + x * 0.09 + i) * 16 * intensidade * Math.min(1, ext) * proximidade;
+      }
+      if (anteriorSep !== null && anteriorSep !== separado) {
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = anteriorSep ? "rgba(220,80,50,0.85)" : "rgba(30,100,200,0.6)";
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      } else if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+      anteriorSep = separado;
+    }
+    ctx.strokeStyle = anteriorSep ? "rgba(220,80,50,0.85)" : "rgba(30,100,200,0.6)";
+    ctx.stroke();
+  }
+  ctx.restore();
 }
