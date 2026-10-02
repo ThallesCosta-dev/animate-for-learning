@@ -163,3 +163,51 @@ export function desenharFiletes(
   }
   ctx.restore();
 }
+
+/** Perfis didáticos para comparação. O perfil "padrão" usa o ângulo crítico central do app. */
+export interface PerfilDidatico {
+  id: string;
+  nome: string;
+  descricao: string;
+  anguloCritico: number;
+  espessura: number; // fração da corda
+  inclinacaoCl: number; // ganho de CL por grau
+  clBase: number;
+  cdBase: number;
+}
+
+export const PERFIS_DIDATICOS: PerfilDidatico[] = [
+  { id: "fino", nome: "Perfil fino (asa de performance)", descricao: "Pouco arrasto, mas estola mais cedo e de forma mais brusca.", anguloCritico: ANGULO_CRITICO_GRAUS - 3, espessura: 0.1, inclinacaoCl: 0.085, clBase: 0.15, cdBase: 0.022 },
+  { id: "padrao", nome: "Perfil padrão (asa escola)", descricao: "Equilíbrio entre sustentação, arrasto e tolerância ao estol.", anguloCritico: ANGULO_CRITICO_GRAUS, espessura: 0.16, inclinacaoCl: 0.08, clBase: 0.2, cdBase: 0.03 },
+  { id: "espesso", nome: "Perfil espesso e curvado", descricao: "Mais sustentação e estol mais tardio, ao custo de mais arrasto.", anguloCritico: ANGULO_CRITICO_GRAUS + 3, espessura: 0.22, inclinacaoCl: 0.075, clBase: 0.3, cdBase: 0.042 },
+];
+
+export function clPerfil(p: PerfilDidatico, aoa: number): number {
+  const a = Math.max(0, aoa);
+  const max = p.clBase + p.inclinacaoCl * p.anguloCritico;
+  if (a <= p.anguloCritico) return p.clBase + p.inclinacaoCl * a;
+  return Math.max(0.35, max - 0.07 * (a - p.anguloCritico));
+}
+
+export function cdPerfil(p: PerfilDidatico, aoa: number): number {
+  const a = Math.max(0, aoa);
+  const base = p.cdBase + 0.0011 * a * a;
+  return a <= p.anguloCritico ? base : base + 0.025 * (a - p.anguloCritico);
+}
+
+export function pontoSeparacaoPerfil(p: PerfilDidatico, aoa: number): number {
+  return pontoSeparacaoDidatico((aoa / p.anguloCritico) * ANGULO_CRITICO_GRAUS);
+}
+
+export function desenharPerfilCom(ctx: CanvasRenderingContext2D, cx: number, cy: number, corda: number, aoaGraus: number, esp: number) {
+  const espessura = corda * esp;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate((aoaGraus * Math.PI) / 180);
+  ctx.beginPath();
+  ctx.moveTo(-corda / 2, 0);
+  ctx.bezierCurveTo(-corda * 0.25, -espessura, corda * 0.3, -espessura, corda / 2, 0);
+  ctx.bezierCurveTo(corda * 0.3, espessura * 0.35, -corda * 0.25, espessura * 0.35, -corda / 2, 0);
+  ctx.closePath();
+  ctx.restore();
+}

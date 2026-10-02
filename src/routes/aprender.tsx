@@ -4,6 +4,7 @@ import { WingParts } from "@/components/aero/WingParts";
 import { AirfoilLab } from "@/components/aero/AirfoilLab";
 import { LiftDragChart } from "@/components/aero/LiftDragChart";
 import { StallSim } from "@/components/aero/StallSim";
+import { ProfileCompare } from "@/components/aero/ProfileCompare";
 import { WingLoading } from "@/components/aero/WingLoading";
 import { WindVectors } from "@/components/aero/WindVectors";
 import { GlideSim } from "@/components/aero/GlideSim";
@@ -231,6 +232,8 @@ function AprenderPage() {
           }}
         >
           <StallSim />
+          <h3 className="mt-8 mb-3 text-lg font-bold">Comparando perfis de asa</h3>
+          <ProfileCompare />
         </Lesson>
 
         <Lesson
