@@ -137,12 +137,12 @@ export function desenharFiletes(
       // contorno do perfil inclinado (bordo de ataque para cima)
       const superficie = -dx * meia * Math.sin(rad);
       let y = cy + y0;
-      if (dx > -1.6 && dx < 1.6) y += superficie * Math.exp(-dx * dx * 0.4) * proximidade;
+      y += superficie * Math.exp(-dx * dx * 0.4) * proximidade;
       y += acima ? -infl * (corda * 0.1 + aoa * 1.6) : infl * corda * 0.03;
       // upwash à frente e downwash atrás da asa
-      if (dx < -1) y -= aoa * 1.4 * Math.exp((dx + 1) * 0.6) * proximidade;
+      y -= aoa * 1.4 * Math.exp(-(dx + 1) * (dx + 1) * 0.5) * proximidade;
       if (dx > 1) y += aoa * 2 * (1 - Math.exp(-(dx - 1) * 0.5)) * proximidade;
-      const separado = acima && dx > pontoSep && Math.abs(y0) < corda * 0.7;
+      const separado = acima && dx > pontoSep && Math.abs(y0) < corda * 0.45;
       if (separado) {
         const ext = Math.min(2.5, dx - pontoSep);
         y -= ext * corda * 0.06 * intensidade * proximidade;
