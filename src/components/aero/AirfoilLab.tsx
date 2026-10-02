@@ -1,17 +1,20 @@
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { SimCanvas } from "@/components/SimCanvas";
 import { Slider } from "@/components/Slider";
 import { Leitura } from "@/components/Leitura";
-import { arrasto, clDidatico, desenharPerfil, kmhParaMs, seta, sustentacao } from "@/lib/aero";
-import { suavizar } from "@/lib/anim";
+import {
+  ANGULO_CRITICO_GRAUS,
+  arrasto,
+  clDidatico,
+  desenharFiletes,
+  desenharPerfil,
+  kmhParaMs,
+  pontoSeparacaoDidatico,
+  seta,
+  sustentacao,
+} from "@/lib/aero";
 import { CORES } from "@/lib/colors";
 import { MODEL_DISCLAIMER } from "@/lib/config";
-
-interface Particula {
-  x: number;
-  y: number;
-  y0: number; // linha de corrente original
-}
 
 interface AirfoilLabProps {
   /** Ângulo de ataque inicial (graus). */
@@ -27,70 +30,35 @@ export function AirfoilLab({ aoaInicial = 6, explicacaoPorAngulo }: AirfoilLabPr
   const [peso, setPeso] = useState(85);
   const [rho, setRho] = useState(1.2);
   const [area, setArea] = useState(26);
-  const particulasRef = useRef<Particula[] | null>(null);
 
   const vMs = kmhParaMs(velKmh);
   const L = useMemo(() => sustentacao(rho, vMs, area, aoa), [rho, vMs, area, aoa]);
   const D = useMemo(() => arrasto(rho, vMs, area, aoa), [rho, vMs, area, aoa]);
   const P = peso * 9.81;
-  const estol = aoa > 15;
+  const estol = aoa >= ANGULO_CRITICO_GRAUS;
   const dinamica = explicacaoPorAngulo?.(aoa);
+  const pontoSep = pontoSeparacaoDidatico(aoa);
+  const intensidadeTurbulencia = estol
+    ? Math.min(1, 0.62 + (aoa - ANGULO_CRITICO_GRAUS) / 9)
+    : 0.08 + (Math.max(0, aoa) / ANGULO_CRITICO_GRAUS) * 0.18;
 
-  const draw = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number, dt: number) => {
+  const draw = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => {
     const cx = w / 2;
     const cy = h / 2;
     const corda = Math.min(w * 0.42, 240);
 
-    if (!particulasRef.current) {
-      const ps: Particula[] = [];
-      for (let i = 0; i < 130; i++) {
-        const y0 = (Math.random() - 0.5) * h * 0.9;
-        ps.push({ x: Math.random() * w, y: cy + y0, y0 });
-      }
-      particulasRef.current = ps;
-    }
-    const ps = particulasRef.current;
-
-    const velocidadePxS = vMs * 3; // escala visual (px/s)
-
-    for (const p of ps) {
-      p.x += velocidadePxS * dt;
-      const dx = (p.x - cx) / (corda / 2);
-      let alvo = cy + p.y0;
-
-      if (Math.abs(dx) < 1.4) {
-        // Desvio causado pelo perfil: o ar de cima é curvado sobre o dorso, o de baixo desvia menos
-        const infl = Math.exp(-dx * dx * 2);
-        const desvioBase = p.y0 >= 0 ? -1 : 0.55;
-        let separacao = 0;
-        if (estol && p.y0 < 0 && dx > -0.6) {
-          // No estol o fluxo se descola do extradorso: partículas se afastam caoticamente
-          separacao = Math.sin(t * 6 + p.y0 * 0.3 + p.x * 0.05) * 26 * (dx + 0.6);
-        }
-        alvo =
-          cy +
-          p.y0 +
-          desvioBase * infl * (corda * 0.1 + aoa * 2.2) +
-          infl * aoa * 2.4 + // perfil inclinado empurra o fluxo para baixo atrás (downwash)
-          separacao;
-      } else if (dx < -1.4 && dx > -4) {
-        // esteira: fluxo desviado para baixo (downwash)
-        alvo = cy + p.y0 + aoa * 2.4 * Math.exp(-(dx + 1.4) * 0.4);
-      }
-
-      p.y = suavizar(p.y, alvo, 5, dt);
-      if (p.x > w + 10) {
-        p.x = -10;
-        p.y0 = (Math.random() - 0.5) * h * 0.9;
-        p.y = cy + p.y0;
-      }
-
-      const acima = p.y0 < 0;
-      ctx.fillStyle = estol && acima ? CORES.fluxoEstol : CORES.fluxo;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    desenharFiletes(ctx, {
+      w,
+      h,
+      t,
+      cx,
+      cy,
+      corda,
+      aoa,
+      pontoSep,
+      intensidade: intensidadeTurbulencia,
+      velocidade: vMs * 6,
+    });
 
     // Perfil
     desenharPerfil(ctx, cx, cy, corda, aoa);
@@ -100,10 +68,29 @@ export function AirfoilLab({ aoaInicial = 6, explicacaoPorAngulo }: AirfoilLabPr
     ctx.lineWidth = 2;
     ctx.stroke();
 
+    const sx = cx + pontoSep * (corda / 2);
+    ctx.fillStyle = "rgba(180,48,48,0.95)";
+    ctx.beginPath();
+    ctx.arc(
+      sx,
+      cy - corda * 0.12 - pontoSep * (corda / 2) * Math.sin((aoa * Math.PI) / 180),
+      5,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+    ctx.font = "bold 11px Manrope, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "separação",
+      sx,
+      cy - corda * 0.12 - pontoSep * (corda / 2) * Math.sin((aoa * Math.PI) / 180) - 11,
+    );
+
     // Corda de referência tracejada
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate((-aoa * Math.PI) / 180);
+    ctx.rotate((aoa * Math.PI) / 180);
     ctx.setLineDash([6, 5]);
     ctx.strokeStyle = "rgba(20,35,60,0.5)";
     ctx.beginPath();
@@ -136,7 +123,7 @@ export function AirfoilLab({ aoaInicial = 6, explicacaoPorAngulo }: AirfoilLabPr
       ctx.fillStyle = "rgba(180,30,30,0.95)";
       ctx.font = "bold 15px Sora, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("⚠ ESTOL — fluxo descolado do perfil", cx, 26);
+      ctx.fillText(`⚠ ESTOL — ângulo crítico de ${ANGULO_CRITICO_GRAUS}° atingido`, cx, 26);
     }
   };
 
@@ -149,7 +136,20 @@ export function AirfoilLab({ aoaInicial = 6, explicacaoPorAngulo }: AirfoilLabPr
       />
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Slider label="Ângulo de ataque" value={aoa} min={0} max={22} unit="°" onChange={setAoa} />
+        <div>
+          <Slider
+            label="Ângulo de ataque"
+            value={aoa}
+            min={-10}
+            max={22}
+            unit="°"
+            onChange={setAoa}
+          />
+          <div className="mt-2 flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">Ângulo crítico (stall)</span>
+            <strong className="text-destructive">{ANGULO_CRITICO_GRAUS}°</strong>
+          </div>
+        </div>
         <Slider
           label="Velocidade"
           value={velKmh}
@@ -194,6 +194,20 @@ export function AirfoilLab({ aoaInicial = 6, explicacaoPorAngulo }: AirfoilLabPr
           decimais={2}
         />
       </div>
+
+      <p
+        className={`mt-3 font-semibold ${estol ? "text-destructive" : aoa >= 10 ? "text-thermal" : "text-forest"}`}
+        role="status"
+        aria-live="polite"
+      >
+        {aoa < 0
+          ? "Ângulo negativo: o bordo de ataque aponta para baixo e a sustentação diminui."
+          : estol
+            ? "Estol: turbulência intensa, arrasto elevado e queda de sustentação."
+            : aoa >= 10
+              ? "A separação avança para o bordo de ataque; o ângulo crítico está próximo."
+              : "A separação permanece na parte traseira, sem perda significativa de sustentação."}
+      </p>
 
       <p className="mt-4 rounded-lg border border-border bg-muted p-3 text-xs text-muted-foreground">
         {MODEL_DISCLAIMER}

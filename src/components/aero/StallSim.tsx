@@ -1,86 +1,67 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { SimCanvas } from "@/components/SimCanvas";
 import { Slider } from "@/components/Slider";
-import { clDidatico, desenharPerfil, seta } from "@/lib/aero";
-import { suavizar } from "@/lib/anim";
+import {
+  ANGULO_CRITICO_GRAUS,
+  clDidatico,
+  desenharPerfil,
+  pontoSeparacaoDidatico,
+  desenharFiletes,
+  seta,
+} from "@/lib/aero";
 import { CORES } from "@/lib/colors";
-
-interface Particula {
-  x: number;
-  y: number;
-  y0: number;
-  turb: number;
-}
-
-const VELOCIDADE_PX_S = 132;
 
 // Animação dedicada ao estol: separação progressiva do fluxo.
 export function StallSim() {
   const [aoa, setAoa] = useState(8);
-  const particulasRef = useRef<Particula[] | null>(null);
   const cl = clDidatico(aoa);
-  const separacaoPct = aoa <= 15 ? 0 : Math.min(1, (aoa - 15) / 8);
+  const estol = aoa >= ANGULO_CRITICO_GRAUS;
+  const proximidadeCritica = Math.min(1, Math.max(0, aoa) / ANGULO_CRITICO_GRAUS);
+  const intensidadeTurbulencia = estol
+    ? Math.min(1, 0.62 + (aoa - ANGULO_CRITICO_GRAUS) / 9)
+    : 0.08 + proximidadeCritica * 0.18;
+  const pontoSep = pontoSeparacaoDidatico(aoa);
 
   const fase =
-    aoa <= 10
-      ? { texto: "Fluxo aderido — a asa trabalha com eficiência.", cor: "text-forest" }
-      : aoa <= 15
+    aoa < 0
+      ? {
+          texto: "Ângulo negativo — o bordo de ataque aponta para baixo e a sustentação diminui.",
+          cor: "text-primary",
+        }
+      : aoa < 8
         ? {
-            texto: "Ângulo alto — a sustentação cresce, mas estamos perto do limite.",
-            cor: "text-thermal",
+            texto: "Separação discreta no bordo de fuga — sem perda significativa de sustentação.",
+            cor: "text-forest",
           }
-        : { texto: "ESTOL — o fluxo descolou e a sustentação despencou.", cor: "text-destructive" };
+        : aoa < ANGULO_CRITICO_GRAUS
+          ? {
+              texto: "A separação avança para o bordo de ataque — o ângulo crítico está próximo.",
+              cor: "text-thermal",
+            }
+          : {
+              texto: `ESTOL — ângulo crítico de ${ANGULO_CRITICO_GRAUS}° atingido; fluxo turbulento e sustentação reduzida.`,
+              cor: "text-destructive",
+            };
 
-  const draw = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number, dt: number) => {
+  const draw = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => {
     const cx = w / 2;
     const cy = h / 2;
     const corda = Math.min(w * 0.42, 240);
 
-    if (!particulasRef.current) {
-      const ps: Particula[] = [];
-      for (let i = 0; i < 150; i++) {
-        const y0 = (Math.random() - 0.5) * h * 0.9;
-        ps.push({ x: Math.random() * w, y: cy + y0, y0, turb: Math.random() * 10 });
-      }
-      particulasRef.current = ps;
-    }
+    desenharFiletes(ctx, {
+      w,
+      h,
+      t,
+      cx,
+      cy,
+      corda,
+      aoa,
+      pontoSep,
+      intensidade: intensidadeTurbulencia,
+      velocidade: 60,
+    });
 
-    // Ponto de separação recua em direção ao bordo de ataque conforme o ângulo aumenta
-    const pontoSep = -0.6 + separacaoPct * -0.3; // em fração da corda
-
-    for (const p of particulasRef.current) {
-      p.x += VELOCIDADE_PX_S * dt;
-      const dx = (p.x - cx) / (corda / 2);
-      const acima = p.y0 < 0;
-      const dentro = Math.abs(dx) < 1.4;
-      const descolado = dentro && acima && dx > pontoSep && separacaoPct > 0;
-      let alvo = cy + p.y0;
-
-      if (descolado) {
-        // Turbulência: movimento caótico e afastamento do perfil
-        const c = separacaoPct * (dx - pontoSep) * 120;
-        alvo = cy + p.y0 - c + Math.sin(t * 7 + p.turb + p.x * 0.08) * 20 * separacaoPct;
-        p.y = suavizar(p.y, alvo, 7, dt);
-      } else if (dentro) {
-        const infl = Math.exp(-dx * dx * 2);
-        alvo = cy + p.y0 + (acima ? -1 : 0.5) * infl * (corda * 0.1 + aoa * 2) + infl * aoa * 2.2;
-        p.y = suavizar(p.y, alvo, 5, dt);
-      } else {
-        p.y = suavizar(p.y, alvo, 3, dt);
-      }
-
-      if (p.x > w + 10) {
-        p.x = -10;
-        p.y0 = (Math.random() - 0.5) * h * 0.9;
-        p.y = cy + p.y0;
-      }
-
-      ctx.fillStyle = descolado ? CORES.fluxoTurbulento : CORES.fluxo;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
+    // Perfil
     desenharPerfil(ctx, cx, cy, corda, aoa);
     ctx.fillStyle = CORES.perfil;
     ctx.fill();
@@ -88,18 +69,25 @@ export function StallSim() {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Marcador do ponto de separação
-    if (separacaoPct > 0) {
-      const sx = cx + pontoSep * (corda / 2);
-      const sy = cy - corda * 0.12 - aoa * 1.5;
-      ctx.fillStyle = CORES.arrasto;
-      ctx.beginPath();
-      ctx.arc(sx, sy, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.font = "bold 12px Manrope, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("separação", sx, sy - 12);
-    }
+    // Marcador que permite acompanhar o avanço da separação pela asa.
+    const sx = cx + pontoSep * (corda / 2);
+    ctx.fillStyle = CORES.arrasto;
+    ctx.beginPath();
+    ctx.arc(
+      sx,
+      cy - corda * 0.12 - pontoSep * (corda / 2) * Math.sin((aoa * Math.PI) / 180),
+      5,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+    ctx.font = "bold 12px Manrope, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "ponto de separação",
+      sx,
+      cy - corda * 0.12 - pontoSep * (corda / 2) * Math.sin((aoa * Math.PI) / 180) - 12,
+    );
 
     // Vetor de sustentação encolhendo no estol
     const esc = 55;
@@ -111,10 +99,21 @@ export function StallSim() {
       <SimCanvas
         draw={draw}
         height={320}
-        label="Animação do estol: partículas de ar se descolam do perfil quando o ângulo de ataque passa do limite"
+        label="Animação do estol: filetes de ar se descolam do perfil quando o ângulo de ataque passa do limite"
       />
       <div className="mt-4 max-w-md">
-        <Slider label="Ângulo de ataque" value={aoa} min={0} max={24} unit="°" onChange={setAoa} />
+        <Slider
+          label="Ângulo de ataque"
+          value={aoa}
+          min={-10}
+          max={24}
+          unit="°"
+          onChange={setAoa}
+        />
+        <div className="mt-2 flex items-center justify-between text-xs">
+          <span className="text-muted-foreground">Ângulo crítico (stall)</span>
+          <strong className="text-destructive">{ANGULO_CRITICO_GRAUS}°</strong>
+        </div>
       </div>
       <p className={`mt-3 font-semibold ${fase.cor}`} role="status" aria-live="polite">
         {fase.texto}
