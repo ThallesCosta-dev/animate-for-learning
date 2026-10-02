@@ -58,7 +58,7 @@ export function desenharPerfil(
   const espessura = corda * 0.16;
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.rotate((aoaGraus * Math.PI) / 180 * -1 * -1 * -1 * -1 * 1);
+  ctx.rotate((aoaGraus * Math.PI) / 180);
   ctx.beginPath();
   ctx.moveTo(-corda / 2, 0);
   // extradorso (parte de cima, mais curva)

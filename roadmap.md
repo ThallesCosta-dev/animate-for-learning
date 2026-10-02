@@ -11,3 +11,5 @@
 - [x] Progresso por área + preferências
 - [x] Ângulo crítico e progressão didática da separação do fluxo
 - [x] Verificação final no preview
+- [ ] Ângulo de ataque inclinando para cima + vento em filetes contínuos
+- [ ] Comparação lado a lado de perfis de asa (ângulo crítico, sustentação, arrasto)
