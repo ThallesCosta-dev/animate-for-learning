@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { SimCanvas } from "@/components/SimCanvas";
 import { Slider } from "@/components/Slider";
 import {
@@ -8,16 +8,12 @@ import {
   desenharPerfil,
   kmhParaMs,
   pontoSeparacaoDidatico,
+  desenharFiletes,
   seta,
   sustentacao,
 } from "@/lib/aero";
 import { MODEL_DISCLAIMER } from "@/lib/config";
 
-interface Particula {
-  x: number;
-  y: number;
-  y0: number; // linha de corrente original
-}
 
 // Laboratório do perfil: partículas de ar + vetores de forças em tempo real.
 export function AirfoilLab() {
@@ -26,7 +22,6 @@ export function AirfoilLab() {
   const [peso, setPeso] = useState(85);
   const [rho, setRho] = useState(1.2);
   const [area, setArea] = useState(26);
-  const particulasRef = useRef<Particula[] | null>(null);
 
   const vMs = kmhParaMs(velKmh);
   const L = useMemo(() => sustentacao(rho, vMs, area, aoa), [rho, vMs, area, aoa]);
@@ -43,62 +38,7 @@ export function AirfoilLab() {
     const cy = h / 2;
     const corda = Math.min(w * 0.42, 240);
 
-    // Inicializa partículas em linhas de corrente
-    if (!particulasRef.current) {
-      const ps: Particula[] = [];
-      for (let i = 0; i < 130; i++) {
-        const y0 = (Math.random() - 0.5) * h * 0.9;
-        ps.push({ x: Math.random() * w, y: cy + y0, y0 });
-      }
-      particulasRef.current = ps;
-    }
-    const ps = particulasRef.current;
-
-    const velocidadePx = (vMs * 30) / 10; // escala visual
-
-    for (const p of ps) {
-      p.x += velocidadePx * (1 / 60);
-      const dx = (p.x - cx) / (corda / 2);
-      let alvo = cy + p.y0;
-
-      if (Math.abs(dx) < 1.4) {
-        // Desvio causado pelo perfil: partículas de cima sobem, as de baixo descem menos
-        const infl = Math.exp(-dx * dx * 2);
-        const desvioBase = p.y0 >= 0 ? -1 : 0.55;
-        let separacao = 0;
-        if (p.y0 < 0 && dx > pontoSep) {
-          // O fluxo começa a separar no bordo de fuga e avança até o bordo de ataque.
-          const extensao = Math.min(2, dx - pontoSep);
-          separacao =
-            -extensao * 24 * intensidadeTurbulencia +
-            Math.sin(t * 6 + p.y0 * 0.3 + p.x * 0.05) * 22 * extensao * intensidadeTurbulencia;
-        }
-        alvo =
-          cy +
-          p.y0 +
-          desvioBase * infl * (corda * 0.1 + aoa * 2.2) +
-          infl * aoa * 2.4 + // perfil inclinado empurra o fluxo para baixo atrás
-          separacao;
-      } else if (dx < -1.4 && dx > -4) {
-        // esteira: fluxo desviado para baixo (downwash)
-        alvo = cy + p.y0 + aoa * 2.4 * Math.exp(-(dx + 1.4) * 0.4);
-      }
-
-      p.y += (alvo - p.y) * 0.08;
-      if (p.x > w + 10) {
-        p.x = -10;
-        p.y0 = (Math.random() - 0.5) * h * 0.9;
-        p.y = cy + p.y0;
-      }
-
-      const acima = p.y0 < 0;
-      const dxAtual = (p.x - cx) / (corda / 2);
-      const descolado = acima && dxAtual > pontoSep && Math.abs(dxAtual) < 1.4;
-      ctx.fillStyle = descolado ? "rgba(220,80,50,0.75)" : "rgba(30,100,200,0.6)";
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    desenharFiletes(ctx, { w, h, t, cx, cy, corda, aoa, pontoSep, intensidade: intensidadeTurbulencia, velocidade: vMs * 6 });
 
     // Perfil
     desenharPerfil(ctx, cx, cy, corda, aoa);
@@ -111,16 +51,16 @@ export function AirfoilLab() {
     const sx = cx + pontoSep * (corda / 2);
     ctx.fillStyle = "rgba(180,48,48,0.95)";
     ctx.beginPath();
-    ctx.arc(sx, cy - corda * 0.12 - aoa * 1.4, 5, 0, Math.PI * 2);
+    ctx.arc(sx, cy - corda * 0.12 - pontoSep * (corda / 2) * Math.sin((aoa * Math.PI) / 180), 5, 0, Math.PI * 2);
     ctx.fill();
     ctx.font = "bold 11px Manrope, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("separação", sx, cy - corda * 0.12 - aoa * 1.4 - 11);
+    ctx.fillText("separação", sx, cy - corda * 0.12 - pontoSep * (corda / 2) * Math.sin((aoa * Math.PI) / 180) - 11);
 
     // Corda de referência tracejada
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate((-aoa * Math.PI) / 180);
+    ctx.rotate((aoa * Math.PI) / 180);
     ctx.setLineDash([6, 5]);
     ctx.strokeStyle = "rgba(20,35,60,0.5)";
     ctx.beginPath();
