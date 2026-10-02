@@ -2,20 +2,36 @@
 // Não representa uma asa real: os coeficientes são inventados para
 // transmitir a intuição das relações físicas.
 
+/** Ângulo crítico adotado em todas as simulações didáticas do app. */
+export const ANGULO_CRITICO_GRAUS = 15;
+
+/**
+ * Posição didática da separação no extradorso, em fração da meia-corda.
+ * 1 representa o bordo de fuga e -1, o bordo de ataque.
+ */
+export function pontoSeparacaoDidatico(aoaGraus: number): number {
+  const progresso = Math.min(1, Math.max(0, aoaGraus) / ANGULO_CRITICO_GRAUS);
+  const antesDoEstol = 0.9 - progresso * 1.65;
+  const aposEstol = Math.min(0.15, Math.max(0, aoaGraus - ANGULO_CRITICO_GRAUS) / 60);
+  return Math.max(-0.9, antesDoEstol - aposEstol);
+}
+
 /** Coeficiente de sustentação didático: cresce com o ângulo de ataque e
  *  despenca após a região de estol (~15°). */
 export function clDidatico(aoaGraus: number): number {
   const a = Math.max(0, aoaGraus);
-  if (a <= 15) return 0.2 + 0.08 * a;
+  if (a <= ANGULO_CRITICO_GRAUS) return 0.2 + 0.08 * a;
   // após o estol, o CL cai progressivamente
-  return Math.max(0.4, 1.4 - 0.07 * (a - 15));
+  return Math.max(0.4, 1.4 - 0.07 * (a - ANGULO_CRITICO_GRAUS));
 }
 
 /** Coeficiente de arrasto didático: mínimo em ângulos baixos, dispara no estol. */
 export function cdDidatico(aoaGraus: number): number {
   const a = Math.max(0, aoaGraus);
   const base = 0.03 + 0.0012 * a * a;
-  return a <= 15 ? base : base + 0.02 * (a - 15);
+  return a <= ANGULO_CRITICO_GRAUS
+    ? base
+    : base + 0.02 * (a - ANGULO_CRITICO_GRAUS);
 }
 
 /** Sustentação (N) — L = ½ · ρ · V² · S · CL. V em m/s. */

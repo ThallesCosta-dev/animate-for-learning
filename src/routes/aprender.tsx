@@ -197,19 +197,22 @@ function AprenderPage() {
           explicacao={
             <>
               <p>
-                Acima de certo ângulo de ataque, o fluxo de ar se <strong>descola</strong> do dorso
-                da asa, formando turbulência. A sustentação despenca e o nariz da asa cai: é o{" "}
-                <strong>estol</strong>.
+                Em ângulos baixos, os filetes de ar começam a se desprender apenas na parte traseira
+                da asa, sem perda significativa de sustentação. Ao aumentar o ângulo de ataque, o
+                ponto de separação avança em direção ao bordo de ataque.
               </p>
               <p>
-                No parapente, o estol acontece ao puxar os freios além do limite, geralmente em
-                velocidade baixa. A recuperação didática: soltar os freios para a asa voltar a
-                voar.
+                Nesta representação, o <strong>ângulo crítico (ou ângulo de stall) é 15°</strong>.
+                Ao atingi-lo, o fluxo se torna intensamente turbulento, o arrasto aumenta e a
+                sustentação fica insuficiente para manter o voo. No parapente, isso pode ocorrer ao
+                puxar os freios além do limite; a recuperação didática é soltá-los para a asa voltar
+                a voar.
               </p>
             </>
           }
           resumo={[
-            "Estol = separação do fluxo por ângulo de ataque excessivo",
+            "O ângulo crítico (stall) desta simulação é 15°",
+            "A separação avança do bordo de fuga para o bordo de ataque",
             "A sustentação cai bruscamente no estol",
             "Recuperação didática: soltar os freios para recuperar velocidade",
           ]}

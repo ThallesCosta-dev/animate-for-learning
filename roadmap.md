@@ -9,4 +9,5 @@
 - [x] Glossário pesquisável
 - [x] Simulador de voo (Phaser)
 - [x] Progresso por área + preferências
+- [x] Ângulo crítico e progressão didática da separação do fluxo
 - [ ] Verificação final no preview
