@@ -31,7 +31,7 @@ export function AirfoilLab() {
   const pontoSep = pontoSeparacaoDidatico(aoa);
   const intensidadeTurbulencia = estol
     ? Math.min(1, 0.62 + (aoa - ANGULO_CRITICO_GRAUS) / 9)
-    : 0.08 + (aoa / ANGULO_CRITICO_GRAUS) * 0.18;
+    : 0.08 + (Math.max(0, aoa) / ANGULO_CRITICO_GRAUS) * 0.18;
 
   const draw = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => {
     const cx = w / 2;
@@ -108,7 +108,7 @@ export function AirfoilLab() {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div>
-          <Slider label="Ângulo de ataque" value={aoa} min={0} max={22} unit="°" onChange={setAoa} />
+          <Slider label="Ângulo de ataque" value={aoa} min={-10} max={22} unit="°" onChange={setAoa} />
           <div className="mt-2 flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Ângulo crítico (stall)</span>
             <strong className="text-destructive">{ANGULO_CRITICO_GRAUS}°</strong>
@@ -128,7 +128,9 @@ export function AirfoilLab() {
       </div>
 
       <p className={`mt-3 font-semibold ${estol ? "text-destructive" : aoa >= 10 ? "text-thermal" : "text-forest"}`} role="status" aria-live="polite">
-        {estol
+        {aoa < 0
+          ? "Ângulo negativo: o bordo de ataque aponta para baixo e a sustentação diminui."
+          : estol
           ? "Estol: turbulência intensa, arrasto elevado e queda de sustentação."
           : aoa >= 10
             ? "A separação avança para o bordo de ataque; o ângulo crítico está próximo."

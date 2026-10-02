@@ -13,3 +13,4 @@
 - [x] Verificação final no preview
 - [x] Ângulo de ataque inclinando para cima + vento em filetes contínuos
 - [x] Comparação lado a lado de perfis de asa (ângulo crítico, sustentação, arrasto)
+- [x] Ângulos de ataque positivos e negativos em todas as simulações aerodinâmicas

@@ -19,7 +19,7 @@ function Cartao({ perfil, aoa }: { perfil: PerfilDidatico; aoa: number }) {
   const cd = cdPerfil(perfil, aoa);
   const estol = aoa >= perfil.anguloCritico;
   const pontoSep = pontoSeparacaoPerfil(perfil, aoa);
-  const intensidade = estol ? Math.min(1, 0.62 + (aoa - perfil.anguloCritico) / 9) : 0.08 + (aoa / perfil.anguloCritico) * 0.18;
+  const intensidade = estol ? Math.min(1, 0.62 + (aoa - perfil.anguloCritico) / 9) : 0.08 + (Math.max(0, aoa) / perfil.anguloCritico) * 0.18;
 
   const draw = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => {
     const cx = w / 2;
@@ -42,7 +42,7 @@ function Cartao({ perfil, aoa }: { perfil: PerfilDidatico; aoa: number }) {
       <div className="mt-2 space-y-2 text-xs">
         <div>
           <div className="flex justify-between"><span>Sustentação (CL)</span><strong>{cl.toFixed(2)}</strong></div>
-          <div className="h-2 rounded bg-muted"><div className="h-2 rounded bg-forest" style={{ width: `${Math.min(100, (cl / CL_MAX) * 100)}%` }} /></div>
+          <div className="h-2 rounded bg-muted"><div className="h-2 rounded bg-forest" style={{ width: `${Math.max(0, Math.min(100, (cl / CL_MAX) * 100))}%` }} /></div>
         </div>
         <div>
           <div className="flex justify-between"><span>Arrasto (CD)</span><strong>{cd.toFixed(3)}</strong></div>
@@ -50,7 +50,11 @@ function Cartao({ perfil, aoa }: { perfil: PerfilDidatico; aoa: number }) {
         </div>
       </div>
       <p className={`mt-2 text-sm font-semibold ${estol ? "text-destructive" : "text-forest"}`} role="status" aria-live="polite">
-        {estol ? "ESTOL — fluxo descolado" : `Fluxo aderido (faltam ${perfil.anguloCritico - aoa}°)`}
+        {aoa < 0
+          ? "Ângulo negativo — sustentação reduzida"
+          : estol
+            ? "ESTOL — fluxo descolado"
+            : `Fluxo aderido (faltam ${perfil.anguloCritico - aoa}°)`}
       </p>
     </div>
   );
@@ -62,7 +66,7 @@ export function ProfileCompare() {
   return (
     <div>
       <div className="mb-4 max-w-md">
-        <Slider label="Ângulo de ataque (igual para todos)" value={aoa} min={0} max={24} unit="°" onChange={setAoa} />
+        <Slider label="Ângulo de ataque (igual para todos)" value={aoa} min={-10} max={24} unit="°" onChange={setAoa} />
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         {PERFIS_DIDATICOS.map((p) => <Cartao key={p.id} perfil={p} aoa={aoa} />)}

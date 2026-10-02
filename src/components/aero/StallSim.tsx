@@ -16,14 +16,16 @@ export function StallSim() {
   const [aoa, setAoa] = useState(8);
   const cl = clDidatico(aoa);
   const estol = aoa >= ANGULO_CRITICO_GRAUS;
-  const proximidadeCritica = Math.min(1, aoa / ANGULO_CRITICO_GRAUS);
+  const proximidadeCritica = Math.min(1, Math.max(0, aoa) / ANGULO_CRITICO_GRAUS);
   const intensidadeTurbulencia = estol
     ? Math.min(1, 0.62 + (aoa - ANGULO_CRITICO_GRAUS) / 9)
     : 0.08 + proximidadeCritica * 0.18;
   const pontoSep = pontoSeparacaoDidatico(aoa);
 
   const fase =
-    aoa < 8
+    aoa < 0
+      ? { texto: "Ângulo negativo — o bordo de ataque aponta para baixo e a sustentação diminui.", cor: "text-primary" }
+      : aoa < 8
       ? { texto: "Separação discreta no bordo de fuga — sem perda significativa de sustentação.", cor: "text-forest" }
       : aoa < ANGULO_CRITICO_GRAUS
         ? { texto: "A separação avança para o bordo de ataque — o ângulo crítico está próximo.", cor: "text-thermal" }
@@ -66,7 +68,7 @@ export function StallSim() {
         deps={[aoa]}
       />
       <div className="mt-4 max-w-md">
-        <Slider label="Ângulo de ataque" value={aoa} min={0} max={24} unit="°" onChange={setAoa} />
+        <Slider label="Ângulo de ataque" value={aoa} min={-10} max={24} unit="°" onChange={setAoa} />
         <div className="mt-2 flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Ângulo crítico (stall)</span>
           <strong className="text-destructive">{ANGULO_CRITICO_GRAUS}°</strong>

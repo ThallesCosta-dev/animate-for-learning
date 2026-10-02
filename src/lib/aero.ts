@@ -19,7 +19,7 @@ export function pontoSeparacaoDidatico(aoaGraus: number): number {
 /** Coeficiente de sustentação didático: cresce com o ângulo de ataque e
  *  despenca após a região de estol (~15°). */
 export function clDidatico(aoaGraus: number): number {
-  const a = Math.max(0, aoaGraus);
+  const a = aoaGraus;
   if (a <= ANGULO_CRITICO_GRAUS) return 0.2 + 0.08 * a;
   // após o estol, o CL cai progressivamente
   return Math.max(0.4, 1.4 - 0.07 * (a - ANGULO_CRITICO_GRAUS));
@@ -27,11 +27,11 @@ export function clDidatico(aoaGraus: number): number {
 
 /** Coeficiente de arrasto didático: mínimo em ângulos baixos, dispara no estol. */
 export function cdDidatico(aoaGraus: number): number {
-  const a = Math.max(0, aoaGraus);
-  const base = 0.03 + 0.0012 * a * a;
-  return a <= ANGULO_CRITICO_GRAUS
+  const magnitude = Math.abs(aoaGraus);
+  const base = 0.03 + 0.0012 * magnitude * magnitude;
+  return aoaGraus <= ANGULO_CRITICO_GRAUS
     ? base
-    : base + 0.02 * (a - ANGULO_CRITICO_GRAUS);
+    : base + 0.02 * (aoaGraus - ANGULO_CRITICO_GRAUS);
 }
 
 /** Sustentação (N) — L = ½ · ρ · V² · S · CL. V em m/s. */
@@ -183,16 +183,16 @@ export const PERFIS_DIDATICOS: PerfilDidatico[] = [
 ];
 
 export function clPerfil(p: PerfilDidatico, aoa: number): number {
-  const a = Math.max(0, aoa);
+  const a = aoa;
   const max = p.clBase + p.inclinacaoCl * p.anguloCritico;
   if (a <= p.anguloCritico) return p.clBase + p.inclinacaoCl * a;
   return Math.max(0.35, max - 0.07 * (a - p.anguloCritico));
 }
 
 export function cdPerfil(p: PerfilDidatico, aoa: number): number {
-  const a = Math.max(0, aoa);
-  const base = p.cdBase + 0.0011 * a * a;
-  return a <= p.anguloCritico ? base : base + 0.025 * (a - p.anguloCritico);
+  const magnitude = Math.abs(aoa);
+  const base = p.cdBase + 0.0011 * magnitude * magnitude;
+  return aoa <= p.anguloCritico ? base : base + 0.025 * (aoa - p.anguloCritico);
 }
 
 export function pontoSeparacaoPerfil(p: PerfilDidatico, aoa: number): number {
